@@ -58,6 +58,14 @@ public class Main {
 
         System.out.println("Broadcasting and delivering messages...\n");
 
+        System.out.println("Number of messages to send: " + parser.nbMessageToSend());
+        System.out.println("Receiver ID: " + parser.receiverID());
+        if (parser.myId() != parser.receiverID()){
+            // broadcast
+
+        } else {
+            // receive and write to output
+        }
         // After a process finishes broadcasting,
         // it waits forever for the delivery of messages.
         while (true) {

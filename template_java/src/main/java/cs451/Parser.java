@@ -25,31 +25,32 @@ public class Parser {
 
         int argsNum = args.length;
         if (argsNum != Constants.ARG_LIMIT_CONFIG) {
-            help();
+            help("Wrong number of arguments");
         }
 
         if (!idParser.populate(args[Constants.ID_KEY], args[Constants.ID_VALUE])) {
-            help();
+            help("ID parsing failed");
         }
 
         if (!hostsParser.populate(args[Constants.HOSTS_KEY], args[Constants.HOSTS_VALUE])) {
-            help();
+            help("Hosts parsing failed");
         }
 
         if (!hostsParser.inRange(idParser.getId())) {
-            help();
+            help("Specified ID not in hosts ID's");
         }
 
         if (!outputParser.populate(args[Constants.OUTPUT_KEY], args[Constants.OUTPUT_VALUE])) {
-            help();
+            help("Output parsing failed");
         }
 
         if (!configParser.populate(args[Constants.CONFIG_VALUE])) {
-            help();
+            help("Config parsing failed");
         }
     }
 
-    private void help() {
+    private void help(String errorMsg) {
+        System.err.println(errorMsg);
         System.err.println("Usage: ./run.sh --id ID --hosts HOSTS --output OUTPUT CONFIG");
         System.exit(1);
     }
@@ -69,5 +70,9 @@ public class Parser {
     public String config() {
         return configParser.getPath();
     }
+    public int nbMessageToSend() {
+        return configParser.getNbMessage();
+    }
+    public int receiverID() {return configParser.getReceiverID();}
 
 }
