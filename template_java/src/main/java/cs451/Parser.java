@@ -59,6 +59,8 @@ public class Parser {
         return idParser.getId();
     }
 
+    public int myPort() {return idParser.getId(); }
+
     public List<Host> hosts() {
         return hostsParser.getHosts();
     }
