@@ -23,11 +23,12 @@ public class ConfigParser {
             nbMessageToSend = Integer.parseInt(configArgs[0]);
             receiverID = Integer.parseInt(configArgs[1]);
             br.close();
+            return true;
         } catch (Exception e) {
-            System.err.println("An exception occurred while reading the config file: "+ e);
+            System.err.println("An exception occurred while reading the config file: ");
+            e.printStackTrace();
             return false;
         }
-        return true;
     }
 
     public String getPath() {

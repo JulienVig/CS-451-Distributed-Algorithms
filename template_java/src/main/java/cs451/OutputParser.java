@@ -1,6 +1,8 @@
 package cs451;
 
-import java.io.File;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class OutputParser {
 
@@ -12,7 +14,6 @@ public class OutputParser {
         if (!key.equals(OUTPUT_KEY)) {
             return false;
         }
-
         File file = new File(value);
         path = file.getPath();
         return true;
@@ -20,6 +21,29 @@ public class OutputParser {
 
     public String getPath() {
         return path;
+    }
+
+    public boolean writeBroadcast(int seqNb){
+        return writeToFile("b " + seqNb);
+    }
+
+    public boolean writeDeliver(String msg){
+        return writeToFile("d " + msg);
+    }
+
+    private boolean writeToFile(String msg){
+        try(FileWriter fw = new FileWriter(path, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter out = new PrintWriter(bw))
+        {
+            out.println(msg);
+            return true;
+        } catch (IOException e) {
+            //exception handling left as an exercise for the reader
+            System.err.println("An exception occurred while writing to an output file: ");
+            e.printStackTrace();
+            return false;
+        }
     }
 
 }

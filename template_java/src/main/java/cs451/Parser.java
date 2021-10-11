@@ -59,14 +59,20 @@ public class Parser {
         return idParser.getId();
     }
 
-    public int myPort() {return idParser.getId(); }
-
     public List<Host> hosts() {
         return hostsParser.getHosts();
     }
 
     public String output() {
         return outputParser.getPath();
+    }
+
+    public boolean writeBroadcast(int seqNb){
+        return outputParser.writeBroadcast(seqNb);
+    }
+
+    public boolean writeDeliver(String msg){
+        return outputParser.writeDeliver(msg);
     }
 
     public String config() {
