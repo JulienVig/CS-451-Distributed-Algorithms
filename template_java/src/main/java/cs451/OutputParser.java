@@ -16,7 +16,14 @@ public class OutputParser {
         }
         File file = new File(value);
         path = file.getPath();
-        return true;
+        try (PrintWriter pw = new PrintWriter(path)){
+            // Initializing the writer empties the file if there was
+            // already some content written inside.
+            return true;
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public String getPath() {
