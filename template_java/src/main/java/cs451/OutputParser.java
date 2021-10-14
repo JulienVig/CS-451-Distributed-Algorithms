@@ -46,7 +46,6 @@ public class OutputParser {
             out.println(msg);
             return true;
         } catch (IOException e) {
-            //exception handling left as an exercise for the reader
             System.err.println("An exception occurred while writing to an output file: ");
             e.printStackTrace();
             return false;
