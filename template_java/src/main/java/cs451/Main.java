@@ -1,25 +1,24 @@
 package cs451;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 
 public class Main {
 
-    private static void handleSignal(ArrayList<String> writeBuffer, Parser parser) {
+    private static void handleSignal(Writer writer) {
         //immediately stop network packet processing
         System.out.println("Immediately stopping network packet processing.");
 
         //write/flush output file if necessary
-        for (String payload : writeBuffer) {
-            parser.writeDeliver(payload);
-        }
+        writer.flush();
         System.out.println("Writing output.");
     }
 
-    private static void initSignalHandlers(ArrayList<String> writeBuffer, Parser parser) {
+    private static void initSignalHandlers(Writer writer) {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                handleSignal(writeBuffer, parser);
+                handleSignal(writer);
             }
         });
     }
@@ -43,11 +42,12 @@ public class Main {
         }
         assert myHost != null && receiverHost != null;
 
-        ArrayList<String> writeBuffer = new ArrayList<>();
-        initSignalHandlers(writeBuffer, parser);
+        Writer writer = new Writer(parser::writeBroadcast, parser::writeDeliver);
+        new Thread(writer).start();
+        initSignalHandlers(writer);
 
         PerfectLink link = new PerfectLink(myHost.getPort(), receiverHost.getIp(),
-                                            receiverHost.getPort(), writeBuffer);
+                                            receiverHost.getPort(), writer);
 
         if (myId == receiverID) link.run();
         else broadcast(parser, myHost, receiverHost, link);
@@ -64,9 +64,7 @@ public class Main {
         for (int i = 0; i < parser.nbMessageToSend(); i++) {
             int seqNb = i + 1;
             PayloadPacket pkt = new PayloadPacket(myHost.getId(), seqNb, myHost, receiverHost);
-            if (link.sendPayload(pkt)) {
-                parser.writeBroadcast(seqNb);
-            }
+            link.send(pkt);
         }
         link.run();
     }

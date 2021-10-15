@@ -1,0 +1,40 @@
+My PID: 14670
+
+From a new terminal type `kill -SIGINT 14670` or `kill -SIGTERM 14670` to stop processing packets
+
+My ID: 9
+
+Sent '9 1'
+Sent '9 2'
+Sent '9 3'
+Sent '9 4'
+Sent '9 5'
+Sent '9 6'
+Sent '9 7'
+Sent '9 8'
+Sent '9 9'
+Sent '9 10'
+Retransmit [9 7, 9 8, 9 9, 9 1, 9 2, 9 3, 9 10, 9 4, 9 5, 9 6]
+Sent '9 7'
+Sent '9 8'
+Sent '9 9'
+Sent '9 1'
+Sent '9 2'
+Sent '9 3'
+Sent '9 10'
+Sent '9 4'
+Sent '9 5'
+Sent '9 6'
+Retransmit [9 7, 9 8, 9 9, 9 1, 9 2, 9 3, 9 10, 9 4, 9 5, 9 6]
+Sent '9 7'
+Sent '9 8'
+Sent '9 9'
+Sent '9 1'
+Sent '9 2'
+Sent '9 3'
+Sent '9 10'
+Sent '9 4'
+Sent '9 5'
+Sent '9 6'
+Immediately stopping network packet processing.
+Writing output.

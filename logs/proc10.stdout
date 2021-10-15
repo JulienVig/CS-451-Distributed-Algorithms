@@ -1,0 +1,18 @@
+My PID: 14671
+
+From a new terminal type `kill -SIGINT 14671` or `kill -SIGTERM 14671` to stop processing packets
+
+My ID: 10
+
+Sent '10 1'
+Sent '10 2'
+Sent '10 3'
+Sent '10 4'
+Sent '10 5'
+Sent '10 6'
+Sent '10 7'
+Sent '10 8'
+Sent '10 9'
+Sent '10 10'
+Immediately stopping network packet processing.
+Writing output.

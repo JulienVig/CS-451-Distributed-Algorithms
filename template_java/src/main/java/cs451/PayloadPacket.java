@@ -24,12 +24,12 @@ public class PayloadPacket extends Packet{
         setByteArray(serializeToBytes());
     }
 
-    /**
-     * This method is used when writing to the output files
-     * @return string format `sender_id seq_number`
-     */
-    public String toExpectedFormat() {
-        return senderId + " " + seqNb;
+    public int getSenderId() {
+        return senderId;
+    }
+
+    public int getSeqNb() {
+        return seqNb;
     }
 
     @Override

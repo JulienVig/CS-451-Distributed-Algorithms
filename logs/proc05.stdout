@@ -1,0 +1,40 @@
+My PID: 14666
+
+From a new terminal type `kill -SIGINT 14666` or `kill -SIGTERM 14666` to stop processing packets
+
+My ID: 5
+
+Sent '5 1'
+Sent '5 2'
+Sent '5 3'
+Sent '5 4'
+Sent '5 5'
+Sent '5 6'
+Sent '5 7'
+Sent '5 8'
+Sent '5 9'
+Sent '5 10'
+Retransmit [5 10, 5 1, 5 2, 5 3, 5 4, 5 5, 5 6, 5 7, 5 8, 5 9]
+Sent '5 10'
+Sent '5 1'
+Sent '5 2'
+Sent '5 3'
+Sent '5 4'
+Sent '5 5'
+Sent '5 6'
+Sent '5 7'
+Sent '5 8'
+Sent '5 9'
+Retransmit [5 10, 5 1, 5 2, 5 3, 5 4, 5 5, 5 6, 5 7, 5 8, 5 9]
+Sent '5 10'
+Sent '5 1'
+Sent '5 2'
+Sent '5 3'
+Sent '5 4'
+Sent '5 5'
+Sent '5 6'
+Sent '5 7'
+Sent '5 8'
+Sent '5 9'
+Immediately stopping network packet processing.
+Writing output.
