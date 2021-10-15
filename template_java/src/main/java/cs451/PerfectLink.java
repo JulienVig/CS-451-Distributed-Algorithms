@@ -11,9 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class PerfectLink implements Runnable {
     private int myPort;
@@ -21,18 +19,15 @@ public class PerfectLink implements Runnable {
     private int toPort;
     volatile HashSet<String> pktToBeAck = new HashSet<>();
     volatile HashMap<String, PayloadPacket> pktSent = new HashMap<>();
+    private BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
     private DatagramSocket ds;
     private InputSocket inputSocket;
     private OutputSocket outputSocket;
-    volatile ArrayList<Packet> sendBuffer = new ArrayList<>();
-    private Writer writer;
-//    volatile ArrayList<Packet> receiveBuffer = new ArrayList<>();
 
     public PerfectLink(int myPort, String toIp, int toPort, Writer writer) {
         this.myPort = myPort;
         this.toIp = toIp;
         this.toPort = toPort;
-        this.writer = writer;
         try {
             ds = new DatagramSocket(myPort);
         } catch (SocketException e) {

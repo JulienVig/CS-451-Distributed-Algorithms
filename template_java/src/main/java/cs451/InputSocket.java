@@ -7,6 +7,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class InputSocket implements Runnable{
@@ -14,11 +16,11 @@ public class InputSocket implements Runnable{
     private Writer writer;
     volatile HashSet<String> pktToBeAck;
     volatile HashSet<String> pktReceived = new HashSet<>();
-    volatile ArrayList<Packet> sendBuffer;
+    private BlockingQueue<Packet> sendBuffer;
     private Responder responder;
 
     public InputSocket(DatagramSocket ds, Writer writer,
-                       HashSet<String> pktToBeAck, ArrayList<Packet> sendBuffer) {
+                       HashSet<String> pktToBeAck, BlockingQueue<Packet> sendBuffer) {
         this.ds = ds;
         this.writer = writer;
         this.pktToBeAck = pktToBeAck;
@@ -48,26 +50,32 @@ public class InputSocket implements Runnable{
      * Inspired from https://stackoverflow.com/a/777209
      */
     private class Responder implements Runnable {
-        private ArrayList<byte[]> receiveBuffer = new ArrayList<>();
-
+        BlockingQueue<byte[]> receiveBuffer = new LinkedBlockingQueue<>();
         public void ack(byte[] bytes){
-            receiveBuffer.add(bytes);
+            try {
+                receiveBuffer.put(bytes);
+            } catch(InterruptedException e){
+                System.err.println("Couldn't add packet to receiveBuffer queue");
+                e.printStackTrace();
+            }
         }
 
         @Override
         public void run() {
             while(true){
-                for (int i = 0; i < receiveBuffer.size(); i++) {
-                    processPacket(receiveBuffer.remove(i));
+                try {
+                    processPacket(receiveBuffer.take());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
                 }
-//                for (byte[] bytes : receiveBuffer) processPacket(bytes);
             }
         }
 
         private void processPacket(byte[] bytes){
             Packet pkt = deserializePkt(bytes);
             assert pkt instanceof PayloadPacket || pkt instanceof AckPacket;
-            System.out.println("Received: " + pkt);
+            System.out.println(Thread.currentThread().getId() + " received: " + pkt);
             if (pkt instanceof PayloadPacket) {
                 PayloadPacket payloadPkt = (PayloadPacket) pkt;
                 sendAck(payloadPkt); // Always send ack when receiving a payload packet
@@ -83,7 +91,12 @@ public class InputSocket implements Runnable{
 
         private void sendAck(PayloadPacket pkt){
             AckPacket ackPkt = new AckPacket(pkt);
-            sendBuffer.add(ackPkt);
+            try {
+                sendBuffer.put(ackPkt);
+            } catch(InterruptedException e){
+                System.err.println("Couldn't add packet to sendBuffer queue");
+                e.printStackTrace();
+            }
             //TODO: implement sender thread on OutputSocket
 //            while(!send(ackPkt)){
 //                System.out.println("Waiting 1s");

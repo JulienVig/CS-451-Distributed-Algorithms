@@ -9,16 +9,17 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.BlockingQueue;
 
 public class OutputSocket implements Runnable{
     private DatagramSocket ds;
     volatile HashSet<String> pktToBeAck;
     volatile HashMap<String, PayloadPacket> pktSent;
-    volatile ArrayList<Packet> sendBuffer;
+    private BlockingQueue<Packet> sendBuffer;
     private Writer writer;
 
     public OutputSocket(DatagramSocket ds, Writer writer, HashMap<String, PayloadPacket> pktSent,
-                        HashSet<String> pktToBeAck, ArrayList<Packet> sendBuffer) {
+                        HashSet<String> pktToBeAck, BlockingQueue<Packet> sendBuffer) {
         this.ds = ds;
         this.pktToBeAck = pktToBeAck;
         this.sendBuffer = sendBuffer;
@@ -29,10 +30,12 @@ public class OutputSocket implements Runnable{
     @Override
     public void run() {
         while(true){
-            for (int i = 0; i < sendBuffer.size(); i++) {
-                send(sendBuffer.remove(i));
+            try {
+                send(sendBuffer.take());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
-//            for (Packet pkt : sendBuffer) send(pkt);
         }
     }
 
@@ -41,8 +44,13 @@ public class OutputSocket implements Runnable{
         sendPayload(pkt);
     }
 
-    public void sendPayload(PayloadPacket pkt) {
-        sendBuffer.add(pkt);
+    public void sendPayload(PayloadPacket pkt){
+        try {
+            sendBuffer.put(pkt);
+        } catch(InterruptedException e){
+            System.err.println("Couldn't add packet to sendBuffer queue");
+            e.printStackTrace();
+        }
         pktToBeAck.add(pkt.getPktId());
         pktSent.put(pkt.getPktId(), pkt);
     }
@@ -52,7 +60,7 @@ public class OutputSocket implements Runnable{
             InetAddress ip = InetAddress.getByName(pkt.receiverHost.getIp());
             DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(), ip, pkt.receiverHost.getPort());
             ds.send(dp);
-            System.out.println("Sent '" + pkt + "'");
+            System.out.println(Thread.currentThread().getId() + " sent '" + pkt + "'");
             return true;
         } catch (Exception e) {
             System.err.println("Exception while sending " + pkt + " through " + this);
