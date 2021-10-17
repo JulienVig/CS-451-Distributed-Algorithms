@@ -1,6 +1,7 @@
 package cs451;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 
 public class Main {
 
@@ -40,35 +41,31 @@ public class Main {
             if (host.getId() == receiverID) receiverHost = host;
             if (host.getId() == myId) myHost = host;
         }
-        assert myHost != null && receiverHost != null;
+//        assert myHost != null && receiverHost != null;
 
         Writer writer = new Writer(parser::writeBroadcast, parser::writeDeliver);
         new Thread(writer).start();
         initSignalHandlers(writer);
 
-        PerfectLink link = new PerfectLink(myHost.getPort(), receiverHost.getIp(),
+        PerfectLink pl;
+        if (myId != receiverID) {
+            pl = new PerfectLink(myHost.getPort(), receiverHost.getIp(), receiverHost.getPort(),
+                    writer, createBroadcastPkt(parser, myHost, receiverHost));
+
+        } else pl = new PerfectLink(myHost.getPort(), receiverHost.getIp(),
                                             receiverHost.getPort(), writer);
-
-        if (myId == receiverID) link.run();
-        else broadcast(parser, myHost, receiverHost, link);
-
-        // After a process finishes broadcasting,
-        // it waits forever for the delivery of messages.
-        while (true) {
-            // Sleep for 1 hour
-            Thread.sleep(60 * 60 * 1000);
-        }
-    }
-
-    public static void broadcast(Parser parser, Host myHost, Host receiverHost, PerfectLink link){
-        for (int i = 0; i < parser.nbMessageToSend(); i++) {
-            int seqNb = i + 1;
-            PayloadPacket pkt = new PayloadPacket(myHost.getId(), seqNb, myHost, receiverHost);
-            link.send(pkt);
-        }
+        LogLink link = new LogLink(pl, myId == receiverID, myId, parser.hosts().size(),
+                                    parser.nbMessageToSend());
         link.run();
     }
 
-
+    public static ArrayList<PayloadPacket> createBroadcastPkt(Parser parser, Host myHost, Host receiverHost){
+        ArrayList<PayloadPacket> broadcastPkt = new ArrayList<>();
+        for (int i = 0; i < parser.nbMessageToSend(); i++) {
+            PayloadPacket pkt = new PayloadPacket(myHost.getId(), i + 1, myHost, receiverHost);
+            broadcastPkt.add(pkt);
+        }
+        return broadcastPkt;
+    }
 
 }

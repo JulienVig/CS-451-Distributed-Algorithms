@@ -1,0 +1,89 @@
+package cs451;
+
+import java.time.ZonedDateTime;
+import java.util.HashSet;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+public class LogLink implements Runnable {
+    private PerfectLink link;
+    private boolean isReceiver;
+    private volatile HashSet<String> pktIdToDeliver = new HashSet<>();
+    private volatile HashSet<String> pktIdToBroadcast = new HashSet<>();
+    private BlockingQueue<Packet> receiveListener = new LinkedBlockingQueue<>();
+    private BlockingQueue<Packet> sendListener = new LinkedBlockingQueue<>();
+    private boolean sentAllPkt;
+    private int nbMsg;
+
+    public LogLink(PerfectLink link, boolean isReceiver, int myId,int nbHost, int nbMsg) {
+        this.link = link;
+        this.isReceiver = isReceiver;
+        this.nbMsg = nbMsg;
+        link.getInputSocket().subscribe(receiveListener);
+        link.getOutputSocket().subscribe(sendListener);
+        if (isReceiver){
+            for (int id = 1; id <= nbHost; id++) {
+                if(id != myId){
+                    for (int seqNb = 1; seqNb <= nbMsg; seqNb++) {
+                        pktIdToDeliver.add(id + " " + seqNb);
+                    }
+                }
+            }
+        } else for (int seqNb = 1; seqNb <= nbMsg; seqNb++) pktIdToBroadcast.add(myId + " " + seqNb);
+
+    }
+
+    @Override
+    public void run() {
+        new Thread(link).start();
+        new Thread(() -> {
+            while (true) {
+                try {
+                    receiverHandler(receiveListener.take());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+        new Thread(() -> {
+            while (true) {
+                try {
+                    senderHandler(sendListener.take());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+    }
+
+    private void receiverHandler(Packet pkt) {
+        if (isReceiver && pkt instanceof PayloadPacket) {
+            if (!pktIdToDeliver.remove(pkt.getPktId())) {
+                System.err.println("Delivered an unexpected packet: " + pkt.getPktId());
+            } else if (pktIdToDeliver.isEmpty()) {
+                System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": delivered all expected packets!");
+            }
+        }
+        if(!isReceiver && pkt instanceof AckPacket){
+            AckPacket ackPkt = (AckPacket) pkt;
+            if (!pktIdToBroadcast.remove(ackPkt.getPayloadPktId())){
+                System.err.println("Delivered an unexpected packet: " + pkt.getPktId());
+            }else if (sentAllPkt && pktIdToBroadcast.isEmpty()) {
+                System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": received ack for all packets!");
+            }
+        }
+    }
+
+    private void senderHandler(Packet pkt){
+        if(!isReceiver && pkt instanceof PayloadPacket){
+            pktIdToBroadcast.add(pkt.getPktId());
+            if (!sentAllPkt && pktIdToBroadcast.size() == nbMsg) {
+                sentAllPkt = true;
+                System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": sent all packets!");
+            }
+
+        }
+    }
+
+}

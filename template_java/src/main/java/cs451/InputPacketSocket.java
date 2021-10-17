@@ -10,29 +10,18 @@ import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class InputSocket implements Runnable{
-    private DatagramSocket ds;
-    private Writer writer;
-    volatile HashSet<String> pktToBeAck;
-    volatile HashSet<String> pktReceived = new HashSet<>();
-    private BlockingQueue<Packet> sendBuffer;
+public class InputPacketSocket extends PacketSocket{
+    private volatile HashSet<String> pktReceived = new HashSet<>();
     private Responder responder;
 
-    public InputSocket(DatagramSocket ds, Writer writer,
-                       HashSet<String> pktToBeAck, BlockingQueue<Packet> sendBuffer) {
-        this.ds = ds;
-        this.writer = writer;
-        this.pktToBeAck = pktToBeAck;
-        this.sendBuffer = sendBuffer;
+    public InputPacketSocket(DatagramSocket ds, Writer writer,
+                             HashSet<String> pktToBeAck, BlockingQueue<Packet> sendBuffer) {
+        super(ds, writer, pktToBeAck, sendBuffer);
         responder = new Responder();
         new Thread(responder).start();
     }
     @Override
     public void run() {
-        receive();
-    }
-
-    public void receive(){
         try {
             byte[] buf;
             while (true) {
@@ -68,15 +57,15 @@ public class InputSocket implements Runnable{
                     processPacket(receiveBuffer.take());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    Thread.currentThread().interrupt();
+//                    Thread.currentThread().interrupt();
                 }
             }
         }
 
         private void processPacket(byte[] bytes){
             Packet pkt = deserializePkt(bytes);
-            assert pkt instanceof PayloadPacket || pkt instanceof AckPacket;
-            System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": received " + pkt);
+//            assert pkt instanceof PayloadPacket || pkt instanceof AckPacket;
+//            System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": received " + pkt);
             if (pkt instanceof PayloadPacket) {
                 PayloadPacket payloadPkt = (PayloadPacket) pkt;
                 sendAck(payloadPkt); // Always send ack when receiving a payload packet
@@ -84,9 +73,12 @@ public class InputSocket implements Runnable{
                     //If pkt not already processed in the past
                     pktReceived.add(payloadPkt.getPktId());
                     writer.write(payloadPkt, Operation.DELIVER); // Format: sender_id seq_nb
+                    publish(payloadPkt); //TODO remove for perf
                 }
             } else {
-                pktToBeAck.remove(((AckPacket) pkt).getPayloadPktId());
+                AckPacket ackPacket = (AckPacket) pkt;
+                pktToBeAck.remove(ackPacket.getPayloadPktId());
+                publish(ackPacket); //TODO remove for perf
             }
         }
 
