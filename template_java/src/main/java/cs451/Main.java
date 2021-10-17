@@ -1,7 +1,6 @@
 package cs451;
 
-import java.util.ArrayList;
-import java.util.function.Function;
+import java.time.ZonedDateTime;
 
 public class Main {
 
@@ -24,6 +23,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws InterruptedException {
+        System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": start");
         Parser parser = new Parser(args);
         parser.parse();
 

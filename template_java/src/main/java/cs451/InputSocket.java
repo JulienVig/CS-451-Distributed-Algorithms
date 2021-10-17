@@ -5,11 +5,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.util.ArrayList;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 public class InputSocket implements Runnable{
     private DatagramSocket ds;
@@ -35,11 +34,13 @@ public class InputSocket implements Runnable{
 
     public void receive(){
         try {
-            byte[] buf = new byte[1024];
+            byte[] buf;
             while (true) {
-                DatagramPacket dp = new DatagramPacket(buf, 1024);
+                buf = new byte[512];
+                DatagramPacket dp = new DatagramPacket(buf, buf.length);
                 ds.receive(dp);
                 responder.ack(dp.getData());
+
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,7 +76,7 @@ public class InputSocket implements Runnable{
         private void processPacket(byte[] bytes){
             Packet pkt = deserializePkt(bytes);
             assert pkt instanceof PayloadPacket || pkt instanceof AckPacket;
-            System.out.println(Thread.currentThread().getId() + " received: " + pkt);
+            System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": received " + pkt);
             if (pkt instanceof PayloadPacket) {
                 PayloadPacket payloadPkt = (PayloadPacket) pkt;
                 sendAck(payloadPkt); // Always send ack when receiving a payload packet
@@ -97,15 +98,6 @@ public class InputSocket implements Runnable{
                 System.err.println("Couldn't add packet to sendBuffer queue");
                 e.printStackTrace();
             }
-            //TODO: implement sender thread on OutputSocket
-//            while(!send(ackPkt)){
-//                System.out.println("Waiting 1s");
-//                try{
-//                    TimeUnit.SECONDS.sleep(1);
-//                } catch(Exception e){
-//                    e.printStackTrace();
-//                }
-//            }
         }
 
         private Packet deserializePkt(byte[] bytes){

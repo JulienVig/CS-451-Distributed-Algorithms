@@ -10,7 +10,6 @@ public class Writer implements Runnable{
     private Consumer<Integer> writeBroadcast;
     private Consumer<String> writeDeliver;
 
-
     public Writer(Consumer<Integer> writeBroadcast, Consumer<String> writeDeliver) {
         this.writeBroadcast = writeBroadcast;
         this.writeDeliver = writeDeliver;
@@ -28,8 +27,6 @@ public class Writer implements Runnable{
         for (int i = 0; i < deliverBuffer.size(); i++) {
             writeDeliver.accept(deliverBuffer.remove(i));
         }
-//        for (Integer seqNb : broadcastBuffer)
-//        for (String senderIdSeqNb : deliverBuffer) writeDeliver.accept(senderIdSeqNb);
     }
 
     @Override

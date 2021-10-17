@@ -6,6 +6,8 @@ import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,7 +62,7 @@ public class OutputSocket implements Runnable{
             InetAddress ip = InetAddress.getByName(pkt.receiverHost.getIp());
             DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(), ip, pkt.receiverHost.getPort());
             ds.send(dp);
-            System.out.println(Thread.currentThread().getId() + " sent '" + pkt + "'");
+            System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": sent '" + pkt + "'");
             return true;
         } catch (Exception e) {
             System.err.println("Exception while sending " + pkt + " through " + this);
