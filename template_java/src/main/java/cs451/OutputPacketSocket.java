@@ -8,9 +8,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,8 +17,8 @@ import java.util.concurrent.TimeUnit;
 public class OutputPacketSocket extends PacketSocket {
     private volatile HashMap<String, PayloadPacket> pktSent;
 
-    public OutputPacketSocket(DatagramSocket ds, Writer writer, HashMap<String, PayloadPacket> pktSent,
-                              HashSet<String> pktToBeAck, BlockingQueue<Packet> sendBuffer) {
+    public OutputPacketSocket(DatagramSocket ds, Writer writer, LinkedHashMap<String, PayloadPacket> pktSent,
+                              LinkedHashSet<String> pktToBeAck, BlockingQueue<Packet> sendBuffer) {
         super(ds, writer, pktToBeAck, sendBuffer);
         this.pktSent = pktSent;
     }
@@ -50,10 +48,11 @@ public class OutputPacketSocket extends PacketSocket {
                     sendPayload(pkt);
                 }
             }
-        }, 5, 5, TimeUnit.SECONDS);
+        }, 100, 100, TimeUnit.MILLISECONDS);
     }
 
     public void sendPayloadAndLog(PayloadPacket pkt) {
+        System.out.println("Send " + pkt);
         writer.write(pkt, Operation.BROADCAST);
         sendPayload(pkt);
     }

@@ -5,20 +5,21 @@ import java.util.ArrayList;
 
 public class Main {
 
-    private static void handleSignal(Writer writer) {
+    private static void handleSignal(Writer writer, LogLink link) {
         //immediately stop network packet processing
         System.out.println("Immediately stopping network packet processing.");
 
         //write/flush output file if necessary
         writer.flush();
+        link.printState();
         System.out.println("Writing output.");
     }
 
-    private static void initSignalHandlers(Writer writer) {
+    private static void initSignalHandlers(Writer writer, LogLink link) {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                handleSignal(writer);
+                handleSignal(writer, link);
             }
         });
     }
@@ -45,7 +46,6 @@ public class Main {
 
         Writer writer = new Writer(parser::writeBroadcast, parser::writeDeliver);
         new Thread(writer).start();
-        initSignalHandlers(writer);
 
         PerfectLink pl;
         if (myId != receiverID) {
@@ -56,6 +56,7 @@ public class Main {
                                             receiverHost.getPort(), writer);
         LogLink link = new LogLink(pl, myId == receiverID, myId, parser.hosts().size(),
                                     parser.nbMessageToSend());
+        initSignalHandlers(writer, link);
         link.run();
     }
 

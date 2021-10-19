@@ -6,7 +6,7 @@ import java.util.Objects;
 public class PayloadPacket extends Packet{
     private int senderId;
     private int seqNb;
-//    private String pktId;
+    private String payload; // The payload is not used
 
     /**
      * Used to create a new PayloadPacket
@@ -19,6 +19,7 @@ public class PayloadPacket extends Packet{
         this.seqNb = seqNb;
         this.senderHost = senderHost;
         this.receiverHost = receiverHost;
+        this.payload = String.valueOf(seqNb);
 
         // /!\ Serialize at the last line of the constructor
         setByteArray(serializeToBytes());

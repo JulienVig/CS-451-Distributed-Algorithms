@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -15,7 +16,7 @@ public class InputPacketSocket extends PacketSocket{
     private Responder responder;
 
     public InputPacketSocket(DatagramSocket ds, Writer writer,
-                             HashSet<String> pktToBeAck, BlockingQueue<Packet> sendBuffer) {
+                             LinkedHashSet<String> pktToBeAck, BlockingQueue<Packet> sendBuffer) {
         super(ds, writer, pktToBeAck, sendBuffer);
         responder = new Responder();
         new Thread(responder).start();
@@ -72,6 +73,7 @@ public class InputPacketSocket extends PacketSocket{
                 if (!pktReceived.contains(payloadPkt.getPktId())) {
                     //If pkt not already processed in the past
                     pktReceived.add(payloadPkt.getPktId());
+                    System.out.println("Received " + payloadPkt);
                     writer.write(payloadPkt, Operation.DELIVER); // Format: sender_id seq_nb
                     publish(payloadPkt); //TODO remove for perf
                 }

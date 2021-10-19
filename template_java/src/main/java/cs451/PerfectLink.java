@@ -2,17 +2,15 @@ package cs451;
 
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class PerfectLink implements Runnable {
     private int myPort;
     private String toIp;
     private int toPort;
-    private volatile HashSet<String> pktToBeAck = new HashSet<>();
-    private volatile HashMap<String, PayloadPacket> pktSent = new HashMap<>();
+    private volatile LinkedHashSet<String> pktToBeAck = new LinkedHashSet<>();
+    private volatile LinkedHashMap<String, PayloadPacket> pktSent = new LinkedHashMap<>();
     private BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
     private DatagramSocket ds;
     private InputPacketSocket inputSocket;

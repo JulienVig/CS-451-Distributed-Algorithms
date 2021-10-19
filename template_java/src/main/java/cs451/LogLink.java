@@ -14,11 +14,14 @@ public class LogLink implements Runnable {
     private BlockingQueue<Packet> sendListener = new LinkedBlockingQueue<>();
     private boolean sentAllPkt;
     private int nbMsg;
+    private int nbHost;
 
     public LogLink(PerfectLink link, boolean isReceiver, int myId,int nbHost, int nbMsg) {
+        if (myId == 2) System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": starting broadcast");
         this.link = link;
         this.isReceiver = isReceiver;
         this.nbMsg = nbMsg;
+        this.nbHost = nbHost;
         link.getInputSocket().subscribe(receiveListener);
         link.getOutputSocket().subscribe(sendListener);
         if (isReceiver){
@@ -68,7 +71,7 @@ public class LogLink implements Runnable {
         if(!isReceiver && pkt instanceof AckPacket){
             AckPacket ackPkt = (AckPacket) pkt;
             if (!pktIdToBroadcast.remove(ackPkt.getPayloadPktId())){
-                System.err.println("Delivered an unexpected packet: " + pkt.getPktId());
+                System.err.println("Received ack for an already delivered packet: " + pkt.getPktId());
             }else if (sentAllPkt && pktIdToBroadcast.isEmpty()) {
                 System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": received ack for all packets!");
             }
@@ -84,6 +87,24 @@ public class LogLink implements Runnable {
             }
 
         }
+    }
+
+    public void printState(){
+        if(isReceiver) {
+            int nbPktNotDelivered = pktIdToDeliver.size();
+            System.out.println("Number of packets not delivered: " + nbPktNotDelivered);
+            System.out.println("Number of packets delivered: " + (nbMsg * (nbHost - 1) - nbPktNotDelivered));
+        } else{
+            int bdSize = pktIdToBroadcast.size();
+            if(sentAllPkt){
+                System.out.println("Nb message not acknowledged:" + bdSize);
+                System.out.println("Nb message acknowledged:" + (nbMsg - bdSize));
+            } else {
+                System.out.println("Broadcasted only " + bdSize + " packets over " + nbMsg);
+            }
+
+        }
+
     }
 
 }
