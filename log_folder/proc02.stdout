@@ -1,0 +1,17 @@
+1635167707596: start
+Send 2 1
+Send 2 2
+Send 2 3
+Send 2 4
+Send 2 5
+Send 2 6
+Send 2 7
+Send 2 8
+Send 2 9
+Send 2 10
+1635167707970: starting broadcast
+1635167708059: received ack for all packets!
+Immediately stopping network packet processing.
+Nb message not acknowledged:0
+Nb message acknowledged:10
+Writing output.

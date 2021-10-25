@@ -36,7 +36,7 @@ public class Writer implements Runnable{
         while((elem = broadcastBuffer.poll()) != null) writeBroadcast.accept(elem);
     }
     private void emptyDeliverBuffer(){
-        String elem ;
+        String elem;
         while((elem = deliverBuffer.poll()) != null) writeDeliver.accept(elem);
     }
 

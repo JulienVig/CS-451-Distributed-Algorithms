@@ -5,25 +5,23 @@ import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class LogLink implements Runnable {
+public class LogLink extends Layer {
     private PerfectLink link;
     private boolean isReceiver;
     private volatile HashSet<String> pktIdToDeliver = new HashSet<>();
     private volatile HashSet<String> pktIdToBroadcast = new HashSet<>();
-    private BlockingQueue<Packet> receiveListener = new LinkedBlockingQueue<>();
-    private BlockingQueue<Packet> sendListener = new LinkedBlockingQueue<>();
-    private boolean sentAllPkt;
+    private boolean sentAllPkt = true;
     private int nbMsg;
     private int nbHost;
+//    private BlockingQueue<Packet> delivered = new LinkedBlockingQueue<>();
 
     public LogLink(PerfectLink link, boolean isReceiver, int myId,int nbHost, int nbMsg) {
         if (myId == 2) System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": starting broadcast");
         this.link = link;
+        link.addUpperLayerDeliver(this::deliver);
         this.isReceiver = isReceiver;
         this.nbMsg = nbMsg;
         this.nbHost = nbHost;
-        link.getInputSocket().subscribe(receiveListener);
-        link.getOutputSocket().subscribe(sendListener);
         if (isReceiver){
             for (int id = 1; id <= nbHost; id++) {
                 if(id != myId){
@@ -39,25 +37,13 @@ public class LogLink implements Runnable {
     @Override
     public void run() {
         new Thread(link).start();
-        new Thread(() -> {
-            while (true) {
-                try {
-                    receiverHandler(receiveListener.take());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        while (true) {
+            try {
+                receiverHandler(delivered.take());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        }).start();
-        new Thread(() -> {
-            while (true) {
-                try {
-                    senderHandler(sendListener.take());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-
+        }
     }
 
     private void receiverHandler(Packet pkt) {
@@ -107,4 +93,8 @@ public class LogLink implements Runnable {
 
     }
 
+    @Override
+    public void deliver(Packet pkt) {
+        delivered.offer(pkt);
+    }
 }

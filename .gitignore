@@ -3,3 +3,4 @@ __pycache__/
 .idea
 example/
 logs
+launch_script*
