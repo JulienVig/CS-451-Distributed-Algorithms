@@ -1,5 +1,7 @@
 package cs451;
 
+import cs451.Packet.PayloadPacket;
+
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;

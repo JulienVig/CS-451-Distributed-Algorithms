@@ -1,11 +1,10 @@
 package cs451;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import cs451.Layer.BestEffortBroadcast;
+import cs451.Layer.LogLink;
+import cs451.Parser.Parser;
+
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 
 public class Main {
 
@@ -40,38 +39,14 @@ public class Main {
 //        System.out.println("My ID: " + parser.myId() + "\n");
 
         int myId = parser.myId();
-        int receiverID = parser.receiverID();
         Host myHost = null;
-        Host receiverHost  = null;
-
-        for (Host host : parser.hosts()) {
-            if (host.getId() == receiverID) receiverHost = host;
-            if (host.getId() == myId) myHost = host;
-        }
-//        assert myHost != null && receiverHost != null;
+        for (Host host : parser.hosts()) if (host.getId() == myId) myHost = host;
 
         Writer writer = new Writer(parser::writeBroadcast, parser::writeDeliver);
         new Thread(writer).start();
-
-        PerfectLink pl;
-        if (myId != receiverID) {
-            pl = new PerfectLink(myHost.getPort(), writer,
-                    createBroadcastPkt(parser, myHost, receiverHost));
-        } else pl = new PerfectLink(myHost.getPort(), writer);
-
-        LogLink link = new LogLink(pl, myId == receiverID, myId, parser.hosts().size(),
-                                    parser.nbMessageToSend());
-        initSignalHandlers(writer, link);
-        link.run();
-    }
-
-    public static ArrayList<PayloadPacket> createBroadcastPkt(Parser parser, Host myHost, Host receiverHost){
-        ArrayList<PayloadPacket> broadcastPkt = new ArrayList<>();
-        for (int i = 0; i < parser.nbMessageToSend(); i++) {
-            PayloadPacket pkt = new PayloadPacket(myHost.getId(), i + 1, myHost, receiverHost);
-            broadcastPkt.add(pkt);
-        }
-        return broadcastPkt;
+        BestEffortBroadcast br = new BestEffortBroadcast(parser.nbMessageToSend(), writer, myHost, parser.hosts());
+        initSignalHandlers(writer, null);
+        br.run();
     }
 
 }

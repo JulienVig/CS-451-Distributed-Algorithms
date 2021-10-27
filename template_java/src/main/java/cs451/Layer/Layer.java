@@ -1,5 +1,7 @@
-package cs451;
+package cs451.Layer;
 
+
+import cs451.Packet.Packet;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;

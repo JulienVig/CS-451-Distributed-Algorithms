@@ -1,4 +1,6 @@
-package cs451;
+package cs451.Layer;
+
+import cs451.Packet.Packet;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -7,7 +9,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.function.Consumer;
 
@@ -63,8 +64,8 @@ public class FairLossLink extends Layer{
 
     private void sendPacket(Packet pkt) {
         try {
-            InetAddress ip = InetAddress.getByName(pkt.receiverHost.getIp());
-            DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(), ip, pkt.receiverHost.getPort());
+            InetAddress ip = InetAddress.getByName(pkt.getReceiverHost().getIp());
+            DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(), ip, pkt.getReceiverHost().getPort());
             ds.send(dp);
 //            System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": sent '" + pkt + "'");
 //            deliver.accept(pkt);

@@ -1,9 +1,11 @@
-package cs451;
+package cs451.Layer;
+
+import cs451.Packet.AckPacket;
+import cs451.Packet.Packet;
+import cs451.Packet.PayloadPacket;
 
 import java.time.ZonedDateTime;
 import java.util.HashSet;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class LogLink extends Layer {
     private PerfectLink link;

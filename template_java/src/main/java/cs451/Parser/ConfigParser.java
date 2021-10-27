@@ -1,4 +1,4 @@
-package cs451;
+package cs451.Parser;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,9 +19,7 @@ public class ConfigParser {
         try {
             BufferedReader br = new BufferedReader(new FileReader(path));
             String configText = br.readLine();
-            String[] configArgs = configText.split(" ");
-            nbMessageToSend = Integer.parseInt(configArgs[0]);
-            receiverID = Integer.parseInt(configArgs[1]);
+            parseFIFOConfig(configText);
             br.close();
             return true;
         } catch (Exception e) {
@@ -29,6 +27,16 @@ public class ConfigParser {
             e.printStackTrace();
             return false;
         }
+    }
+
+    private void parseFIFOConfig(String configText){
+        nbMessageToSend = Integer.valueOf(configText);
+    }
+
+    private void parsePerfectLinkConfig(String configText){
+        String[] configArgs = configText.split(" ");
+        nbMessageToSend = Integer.parseInt(configArgs[0]);
+        receiverID = Integer.parseInt(configArgs[1]);
     }
 
     public String getPath() {

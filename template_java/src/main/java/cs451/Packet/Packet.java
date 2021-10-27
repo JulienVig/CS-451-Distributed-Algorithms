@@ -1,4 +1,6 @@
-package cs451;
+package cs451.Packet;
+
+import cs451.Host;
 
 import java.io.*;
 import java.util.Objects;
@@ -10,8 +12,8 @@ public abstract class Packet implements Serializable {
     private String pktId;
     private transient byte[] byteArray;
     // TODO: set to private and create deep copy for setters
-    Host senderHost;
-    Host receiverHost;
+    private Host senderHost;
+    private Host receiverHost;
 
     byte[] serializeToBytes() {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -40,6 +42,22 @@ public abstract class Packet implements Serializable {
 
     public byte[] getBytes() {
         return byteArray;
+    }
+
+    public Host getSenderHost() {
+        return senderHost;
+    }
+
+    public Host getReceiverHost() {
+        return receiverHost;
+    }
+
+    public void setSenderHost(Host senderHost) {
+        this.senderHost = senderHost;
+    }
+
+    public void setReceiverHost(Host receiverHost) {
+        this.receiverHost = receiverHost;
     }
 
     public void setByteArray(byte[] byteArray) {

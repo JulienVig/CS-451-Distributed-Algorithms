@@ -1,7 +1,7 @@
-package cs451;
+package cs451.Packet;
 
 
-import java.util.Objects;
+import cs451.Host;
 
 public class PayloadPacket extends Packet{
     private int senderId;
@@ -14,11 +14,11 @@ public class PayloadPacket extends Packet{
      * @param seqNb
      */
     public PayloadPacket(int senderId, int seqNb, Host senderHost, Host receiverHost) {
-        setPktId(senderId + " " + seqNb);
+        setPktId(senderId + " " + receiverHost.getId() + " " + seqNb);
         this.senderId = senderId;
         this.seqNb = seqNb;
-        this.senderHost = senderHost;
-        this.receiverHost = receiverHost;
+        setSenderHost(senderHost);
+        setReceiverHost(receiverHost);
         this.payload = String.valueOf(seqNb);
 
         // /!\ Serialize at the last line of the constructor

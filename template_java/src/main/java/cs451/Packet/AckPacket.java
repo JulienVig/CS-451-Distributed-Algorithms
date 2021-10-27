@@ -1,4 +1,4 @@
-package cs451;
+package cs451.Packet;
 
 /**
  * An AckPacket only contains the PayloadPacket's id
@@ -13,8 +13,8 @@ public class AckPacket extends Packet{
         this.payloadPktId = payloadPkt.getPktId();
         setPktId("ack " + payloadPktId);
         // Swap hosts for response
-        this.receiverHost = payloadPkt.senderHost;
-        this.senderHost = payloadPkt.receiverHost;
+        setReceiverHost(payloadPkt.getSenderHost());
+        setSenderHost(payloadPkt.getReceiverHost());
 
         // /!\ Serialize at the last line of the constructor
         setByteArray(serializeToBytes());

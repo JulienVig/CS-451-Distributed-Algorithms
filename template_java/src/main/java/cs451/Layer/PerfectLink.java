@@ -1,7 +1,12 @@
-package cs451;
+package cs451.Layer;
 
-import java.net.DatagramSocket;
-import java.net.SocketException;
+import cs451.Operation;
+import cs451.Packet.AckPacket;
+import cs451.Packet.Packet;
+import cs451.Packet.PayloadPacket;
+import cs451.Writer;
+
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
@@ -52,7 +57,6 @@ public class PerfectLink extends Layer {
                 Packet receivedPkt = delivered.take();
 //                System.out.println(Thread.currentThread().getId()  +" consumed: " + receivedPkt);
                 processPacket(receivedPkt);
-                if (upperLayerDeliver != null) upperLayerDeliver.accept(receivedPkt);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -60,8 +64,8 @@ public class PerfectLink extends Layer {
     }
 
     private void send(PayloadPacket pkt) {
-        System.out.println("Send " + pkt);
-        writer.write(pkt, Operation.BROADCAST);
+//        System.out.println("Send " + pkt);
+//        writer.write(pkt, Operation.BROADCAST);
         sendPayload(pkt);
     }
 
@@ -83,7 +87,7 @@ public class PerfectLink extends Layer {
 
     private void processPacket(Packet pkt){
 //            assert pkt instanceof PayloadPacket || pkt instanceof AckPacket;
-//            System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": received " + pkt);
+        System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": received " + pkt);
         if (pkt instanceof PayloadPacket) {
             PayloadPacket payloadPkt = (PayloadPacket) pkt;
             sendAck(payloadPkt); // Always send ack when receiving a payload packet
@@ -92,6 +96,7 @@ public class PerfectLink extends Layer {
                 pktReceived.add(payloadPkt.getPktId());
 //                System.out.println(Thread.currentThread().getId()  +"Received " + payloadPkt);
                 writer.write(payloadPkt, Operation.DELIVER); // Format: sender_id seq_nb
+                upperLayerDeliver.accept(payloadPkt);
             }
         } else {
             AckPacket ackPacket = (AckPacket) pkt;
@@ -121,6 +126,6 @@ public class PerfectLink extends Layer {
                     sendPayload(pkt);
                 }
             }
-        }, 100, 100, TimeUnit.MILLISECONDS);
+        }, 2, 2, TimeUnit.SECONDS);
     }
 }
