@@ -9,6 +9,7 @@ import cs451.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class UniformReliableBroadcast extends Layer{
     // At this layer pkt are identified by the string "originalSender seqNumber"
@@ -17,13 +18,13 @@ public class UniformReliableBroadcast extends Layer{
     private HashSet<String> pending = new HashSet<>();
     private HashMap<String, HashSet<Integer>> ack = new HashMap<>(); // Map<pkt id, host id>
     private BestEffortBroadcast beb;
-    private Writer writer;
     private double quorum;
-    private int myId;
+    private Consumer<Packet> upperLayerDeliver;
 
-    public UniformReliableBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts){
+    public UniformReliableBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts,
+                                    Consumer<Packet> upperLayerDeliver){
         quorum = hosts.size() / 2.0;
-        this.writer = writer;
+        this.upperLayerDeliver = upperLayerDeliver;
         beb = new BestEffortBroadcast(nbMessageToSend, writer, myHost, hosts, this::deliver, this::broadcast);
         new Thread(beb).start();
     }
@@ -80,7 +81,7 @@ public class UniformReliableBroadcast extends Layer{
             alreadyDelivered.add(simpleId);
             ack.remove((simpleId));
             pending.remove(simpleId);
-            writer.write(pkt, Operation.DELIVER);
+            upperLayerDeliver.accept(pkt);
             System.out.println("URB deliver " + pkt.getSimpleId());
         }
     }

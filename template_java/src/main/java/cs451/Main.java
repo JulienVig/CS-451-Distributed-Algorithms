@@ -1,6 +1,7 @@
 package cs451;
 
 import cs451.Layer.BestEffortBroadcast;
+import cs451.Layer.FIFOBroadcast;
 import cs451.Layer.LogLink;
 import cs451.Layer.UniformReliableBroadcast;
 import cs451.Parser.Parser;
@@ -45,10 +46,10 @@ public class Main {
 
         Writer writer = new Writer(parser::writeBroadcast, parser::writeDeliver);
         new Thread(writer).start();
-        UniformReliableBroadcast urb = new UniformReliableBroadcast(parser.nbMessageToSend(), writer,
+        FIFOBroadcast fifo = new FIFOBroadcast(parser.nbMessageToSend(), writer,
                 myHost, parser.hosts());
         initSignalHandlers(writer, null);
-        urb.run();
+        fifo.run();
     }
 
 }

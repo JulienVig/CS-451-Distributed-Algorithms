@@ -1,0 +1,69 @@
+package cs451.Layer;
+
+import cs451.Host;
+import cs451.Operation;
+import cs451.Packet.Packet;
+import cs451.Packet.PayloadPacket;
+import cs451.Writer;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class FIFOBroadcast extends Layer {
+
+    private HashMap<Integer, Integer> next = new HashMap<>(); //Map<Host id, seq nb>
+    // Use Map<simple Id, packet> because we don't want equality tested on
+    // pktId but only on simpleId
+    private ConcurrentHashMap<String, PayloadPacket> pending = new ConcurrentHashMap<>();
+    private UniformReliableBroadcast urb;
+    private Writer writer;
+
+    public FIFOBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts) {
+        this.writer = writer;
+        for (Host host : hosts) next.put(host.getId(), 1);
+        urb = new UniformReliableBroadcast(nbMessageToSend, writer, myHost, hosts, this::deliver);
+        new Thread(urb).start();
+
+    }
+
+    @Override
+    public void deliver(Packet pkt) {
+        delivered.offer(pkt);
+    }
+
+    @Override
+    public void run() {
+        while(true){
+            try {
+                processPkt(delivered.take());
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void processPkt(Packet pkt){
+        PayloadPacket payloadPacket = (PayloadPacket)  pkt;
+        pending.put(payloadPacket.getSimpleId(), payloadPacket);
+        tryDelivering();
+    }
+
+    private void tryDelivering(){
+        int hostId;
+        boolean deliveredPacket;
+        do {
+            deliveredPacket = false;
+            for (Map.Entry<String, PayloadPacket> entry : pending.entrySet()) {
+                PayloadPacket pkt = entry.getValue();
+                hostId = pkt.getOriginalSenderId();
+                if (pkt.getSeqNb() == next.get(hostId)) {
+                    System.out.println("FIFO deliver " + pkt.getSimpleId());
+                    writer.write(pkt, Operation.DELIVER);
+                    next.put(hostId, next.get(hostId) + 1);
+                    pending.remove(entry.getKey());
+                    deliveredPacket = true;
+                }
+            }
+        } while(deliveredPacket);
+    }
+}
