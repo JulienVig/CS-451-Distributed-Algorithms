@@ -19,19 +19,19 @@ public class PerfectLink extends Layer {
     private Consumer<Packet> upperLayerDeliver;
     private Writer writer;
     private FairLossLink link;
-//    private BlockingQueue<Packet> delivered = new LinkedBlockingQueue<>();
 
-    public PerfectLink(int myPort, Writer writer) {
+    public PerfectLink(int myPort, Writer writer, Consumer<Packet> upperLayerDeliver) {
         this.writer = writer;
+        this.upperLayerDeliver = upperLayerDeliver;
         this.link = new FairLossLink(myPort, sendBuffer, this::deliver);
         new Thread(link).start();
         new Thread(this::startRetransmissions).start();
     }
 
-    public PerfectLink(int myPort, Writer writer,
+    public PerfectLink(int myPort, Writer writer, Consumer<Packet> upperLayerDeliver,
                        ArrayList<PayloadPacket> broadcastPkt) {
-        this(myPort, writer);
-        for (PayloadPacket pkt : broadcastPkt) send(pkt);
+        this(myPort, writer, upperLayerDeliver);
+        for (PayloadPacket pkt : broadcastPkt) sendPayload(pkt);
     }
 
     @Override
@@ -43,10 +43,6 @@ public class PerfectLink extends Layer {
             System.err.println("Couldn't add packet to receiveBuffer queue");
             e.printStackTrace();
         }
-    }
-
-    public void addUpperLayerDeliver(Consumer<Packet> upperLayerDeliver){
-        this.upperLayerDeliver = upperLayerDeliver;
     }
 
     @Override
@@ -63,13 +59,7 @@ public class PerfectLink extends Layer {
         }
     }
 
-    private void send(PayloadPacket pkt) {
-//        System.out.println("Send " + pkt);
-//        writer.write(pkt, Operation.BROADCAST);
-        sendPayload(pkt);
-    }
-
-    private void sendPayload(PayloadPacket pkt) {
+    public void sendPayload(PayloadPacket pkt) {
         try {
             sendBuffer.put(pkt);
         } catch (InterruptedException e) {
@@ -87,7 +77,7 @@ public class PerfectLink extends Layer {
 
     private void processPacket(Packet pkt){
 //            assert pkt instanceof PayloadPacket || pkt instanceof AckPacket;
-        System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": received " + pkt);
+//        System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": received " + pkt);
         if (pkt instanceof PayloadPacket) {
             PayloadPacket payloadPkt = (PayloadPacket) pkt;
             sendAck(payloadPkt); // Always send ack when receiving a payload packet
@@ -95,7 +85,6 @@ public class PerfectLink extends Layer {
                 //If pkt not already processed in the past
                 pktReceived.add(payloadPkt.getPktId());
 //                System.out.println(Thread.currentThread().getId()  +"Received " + payloadPkt);
-                writer.write(payloadPkt, Operation.DELIVER); // Format: sender_id seq_nb
                 upperLayerDeliver.accept(payloadPkt);
             }
         } else {
@@ -119,13 +108,13 @@ public class PerfectLink extends Layer {
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(() -> {
             if (pktToBeAck.isEmpty()) return;
-            System.out.println("Retransmit " + pktToBeAck);
+//            System.out.println("Retransmit " + pktToBeAck);
             for (String pktId : pktToBeAck) {
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
                 if (pkt != null) {
                     sendPayload(pkt);
                 }
             }
-        }, 2, 2, TimeUnit.SECONDS);
+        }, 100, 100, TimeUnit.MILLISECONDS);
     }
 }

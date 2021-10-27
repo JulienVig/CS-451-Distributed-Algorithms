@@ -9,9 +9,8 @@ import java.util.Objects;
  * Serialization inspired from https://stackoverflow.com/questions/2836646/java-serializable-object-to-byte-array
  */
 public abstract class Packet implements Serializable {
-    private String pktId;
     private transient byte[] byteArray;
-    // TODO: set to private and create deep copy for setters
+    private String pktId;
     private Host senderHost;
     private Host receiverHost;
 
@@ -26,7 +25,6 @@ public abstract class Packet implements Serializable {
             return null;
         }
     }
-
 
     public int length() {
         return byteArray.length;

@@ -20,7 +20,7 @@ public class LogLink extends Layer {
     public LogLink(PerfectLink link, boolean isReceiver, int myId,int nbHost, int nbMsg) {
         if (myId == 2) System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": starting broadcast");
         this.link = link;
-        link.addUpperLayerDeliver(this::deliver);
+//        link.addUpperLayerDeliver(this::deliver);
         this.isReceiver = isReceiver;
         this.nbMsg = nbMsg;
         this.nbHost = nbHost;

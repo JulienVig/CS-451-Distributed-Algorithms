@@ -2,6 +2,7 @@ package cs451;
 
 import cs451.Layer.BestEffortBroadcast;
 import cs451.Layer.LogLink;
+import cs451.Layer.UniformReliableBroadcast;
 import cs451.Parser.Parser;
 
 import java.time.ZonedDateTime;
@@ -44,9 +45,10 @@ public class Main {
 
         Writer writer = new Writer(parser::writeBroadcast, parser::writeDeliver);
         new Thread(writer).start();
-        BestEffortBroadcast br = new BestEffortBroadcast(parser.nbMessageToSend(), writer, myHost, parser.hosts());
+        UniformReliableBroadcast urb = new UniformReliableBroadcast(parser.nbMessageToSend(), writer,
+                myHost, parser.hosts());
         initSignalHandlers(writer, null);
-        br.run();
+        urb.run();
     }
 
 }

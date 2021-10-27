@@ -21,7 +21,7 @@ public class Writer implements Runnable{
     public void write(PayloadPacket pkt, Operation op){
         try {
             if (op == Operation.BROADCAST) broadcastBuffer.add(pkt.getSeqNb());
-            if (op == Operation.DELIVER) deliverBuffer.add(pkt.getSenderId() + " " + pkt.getSeqNb());
+            if (op == Operation.DELIVER) deliverBuffer.add(pkt.getOriginalSenderId() + " " + pkt.getSeqNb());
         } catch(Exception e){
             System.err.println("Couldn't add packet log to write buffer");
             e.printStackTrace();

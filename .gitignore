@@ -4,3 +4,4 @@ __pycache__/
 example/
 logs
 launch_script*
+log_folder/*
