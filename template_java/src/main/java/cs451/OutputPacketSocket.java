@@ -41,6 +41,7 @@ public class OutputPacketSocket extends PacketSocket {
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(() -> {
             if (pktToBeAck.isEmpty()) return;
+            if (sendBuffer.size() > 50) return; //Only retransmit when sent send buffer is almost empty
             System.out.println("Retransmit " + pktToBeAck);
             for (String pktId : pktToBeAck) {
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
