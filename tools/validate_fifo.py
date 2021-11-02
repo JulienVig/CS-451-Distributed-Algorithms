@@ -23,7 +23,6 @@ def checkProcess(filePath):
     i = 1
     nextMessage = defaultdict(lambda : 1)
     filename = os.path.basename(filePath)
-
     with open(filePath) as f:
         for lineNumber, line in enumerate(f):
             tokens = line.split()
@@ -45,7 +44,6 @@ def checkProcess(filePath):
                     return False
                 else:
                     nextMessage[sender] = msg + 1
-
     return True
 
 if __name__ == "__main__":
@@ -69,7 +67,7 @@ if __name__ == "__main__":
 
     for o in results.output:
         print("Checking {}".format(o))
-        if checkProcess(o):
+        if not checkProcess(o):
             print("Validation failed!")
         else:
             print("Validation OK")

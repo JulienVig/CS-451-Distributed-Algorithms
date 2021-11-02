@@ -48,7 +48,7 @@ public class BestEffortBroadcast extends Layer{
         boolean pktAlreadyLogged = false;
         for(Host host: hosts) {
             if (host != myHost) {
-                for (int i = 10; i >= 1; i--) {
+                for (int i = 1; i <= nbMessageToSend; i++) {
                     PayloadPacket pkt = new PayloadPacket(i, myHost, host);
                     broadcastPkt.add(pkt);
                     //Only log broadcast once per packet
