@@ -11,10 +11,10 @@ from enum import Enum
 from collections import defaultdict, OrderedDict
 
 
-def parse_receiver_file(file):
-    with open(file) as f:
-        lines = f.readlines()
-        print("Number of packets received:", len(lines))
+# def parse_receiver_file(file):
+#     with open(file) as f:
+#         lines = f.readlines()
+#         print("Number of packets received:", len(lines))
 
 def parse_sender_file(file):
      with open(file) as f:
@@ -38,6 +38,16 @@ def parse_output_files(sender_files, receiver_file):
                 if m in messages:
                     messages.remove(m)
     print("Remaining number of messages:", len(messages))
+    if len(messages):
+        missing_messages = {}
+        for m in messages:
+            sender_id = int(m.split(" ")[0])
+            seq_nb = int(m.plist(" ")[1])
+            if sender_id not in missing_messages:
+                missing_messages[sender_id] = set()
+            missing_messages[sender_id].add(seq_nb)
+        for sender_id in missing_messages.keys():
+            print(f"{sender_id} has {len(missing_messages[sender_id])} packets not delivered by the receiver")
                 
 
 
@@ -69,9 +79,9 @@ if __name__ == "__main__":
     for file in os.listdir(results.log_folder):
         if file == f"proc{results.receiver_id:02d}.output":
             receiver_file = os.path.join(results.log_folder, file)
-            parse_receiver_file(os.path.join(results.log_folder, file))
+            # parse_receiver_file(os.path.join(results.log_folder, file))
         elif file.endswith(".output"):
             parse_sender_file(os.path.join(results.log_folder, file))
             sender_files.append(os.path.join(results.log_folder, file))
 
-    parse_output_files(sender_files, receiver_file)
+    parse_output_files(sorted(sender_files), receiver_file)
