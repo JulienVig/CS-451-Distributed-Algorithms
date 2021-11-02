@@ -64,6 +64,7 @@ public class InputPacketSocket extends PacketSocket{
         }
 
         private void processPacket(byte[] bytes){
+            System.out.println("Processing packet");
             Packet pkt = deserializePkt(bytes);
 //            assert pkt instanceof PayloadPacket || pkt instanceof AckPacket;
 //            System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": received " + pkt);
