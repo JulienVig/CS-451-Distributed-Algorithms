@@ -56,7 +56,6 @@ public class OutputPacketSocket extends PacketSocket {
     }
 
     public void sendPayloadAndLog(PayloadPacket pkt) {
-        System.out.println("Send " + pkt);
         writer.write(pkt, Operation.BROADCAST);
         sendPayload(pkt);
     }
@@ -73,6 +72,7 @@ public class OutputPacketSocket extends PacketSocket {
     }
 
     private void send(Packet pkt) {
+        System.out.println("Send " + pkt);
         try {
             InetAddress ip = InetAddress.getByName(pkt.receiverHost.getIp());
             DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(), ip, pkt.receiverHost.getPort());
