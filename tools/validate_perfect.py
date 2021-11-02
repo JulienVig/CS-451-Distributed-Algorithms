@@ -22,12 +22,16 @@ def parse_sender_file(file):
         print(f"{file} sent {len(lines)} packets")
 
 def parse_output_files(sender_files, receiver_file):
-    messages = set()
+    messages = []
+    unique_messages_received = set()
     with open(receiver_file) as f:
         for line in f.readlines():
             m = line[2:]
-            messages.add(m)
+            messages.append(m)
+            unique_messages_received.add(m)
     print("Number of messages:", len(messages))
+    # print("Number of duplicated delivered messages:", len(messages) - len(set(messages)))
+    unique_messages_sent = set()
     for sender_file in sender_files:
         end_idx = sender_file.index('.output')
         start_idx = end_idx - 2
@@ -35,18 +39,21 @@ def parse_output_files(sender_files, receiver_file):
         with open(sender_file) as f:
             for line in f.readlines():
                 m = f"{sender_id} {line[2:]}"
+                unique_messages_sent.add(m)
                 if m in messages:
                     messages.remove(m)
+    messages = unique_messages_sent.difference(unique_messages_received)
     print("Remaining number of messages:", len(messages))
     if len(messages):
         missing_messages = {}
         for m in messages:
             sender_id = int(m.split(" ")[0])
-            seq_nb = int(m.plist(" ")[1])
+            seq_nb = int(m.split(" ")[1])
             if sender_id not in missing_messages:
-                missing_messages[sender_id] = set()
-            missing_messages[sender_id].add(seq_nb)
+                missing_messages[sender_id] = []
+            missing_messages[sender_id].append(seq_nb)
         for sender_id in missing_messages.keys():
+            # print("Number of duplicated sent messages:", len(missing_messages[sender_id]) - len(set(missing_messages[sender_id])))
             print(f"{sender_id} has {len(missing_messages[sender_id])} packets not delivered by the receiver")
                 
 
