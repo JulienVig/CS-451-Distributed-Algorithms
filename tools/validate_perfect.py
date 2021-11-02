@@ -23,12 +23,15 @@ def parse_sender_file(file):
 
 def parse_output_files(sender_files, receiver_file):
     messages = []
+    unique_messages_received = set()
     with open(receiver_file) as f:
         for line in f.readlines():
             m = line[2:]
             messages.append(m)
+            unique_messages_received.add(m)
     print("Number of messages:", len(messages))
     print("Number of duplicated delivered messages:", len(messages) - len(set(messages)))
+    unique_messages_sent = set()
     for sender_file in sender_files:
         end_idx = sender_file.index('.output')
         start_idx = end_idx - 2
@@ -36,8 +39,10 @@ def parse_output_files(sender_files, receiver_file):
         with open(sender_file) as f:
             for line in f.readlines():
                 m = f"{sender_id} {line[2:]}"
+                unique_messages_sent.add(m)
                 if m in messages:
                     messages.remove(m)
+    messages = unique_messages_sent.difference(unique_messages_received)
     print("Remaining number of messages:", len(messages))
     if len(messages):
         missing_messages = {}
