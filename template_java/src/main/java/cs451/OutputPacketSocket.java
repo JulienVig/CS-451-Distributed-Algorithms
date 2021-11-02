@@ -44,7 +44,7 @@ public class OutputPacketSocket extends PacketSocket {
                 System.out.println("PktToBeAck is empty");
                 return;
             }
-            if (sendBuffer.size() > 50) return; //Only retransmit when sent send buffer is almost empty
+//            if (sendBuffer.size() > 50) return; //Only retransmit when sent send buffer is almost empty
             System.out.println("Retransmit " + pktToBeAck);
             for (String pktId : pktToBeAck) {
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
