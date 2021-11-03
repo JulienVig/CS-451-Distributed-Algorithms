@@ -61,13 +61,15 @@ public class OutputPacketSocket extends PacketSocket {
                 String pktId = it.next();
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
                 if (pkt != null) {
+                    System.out.println("Start add send buffer");
+                    System.out.println("send buffer length: " sendBuffer.size());
                     try {
                         sendBuffer.put(pkt);
                     } catch (InterruptedException e) {
                         System.err.println("Couldn't add packet to sendBuffer queue");
                         e.printStackTrace();
                     }
-                    System.out.println("End send buffer");
+                    System.out.println("End add send buffer");
                     counter ++;
                 }
             }
