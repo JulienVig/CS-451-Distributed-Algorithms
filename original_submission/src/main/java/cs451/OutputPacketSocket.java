@@ -40,6 +40,7 @@ public class OutputPacketSocket extends PacketSocket {
         // Set a periodic retransmission of packets not yet ack
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(() -> {
+            System.out.println("Try to retransmit");
             if (pktToBeAck.isEmpty()) {
                 System.out.println("No more packets to be ack");
                 return;
