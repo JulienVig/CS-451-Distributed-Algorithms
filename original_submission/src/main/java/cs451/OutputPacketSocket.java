@@ -49,7 +49,7 @@ public class OutputPacketSocket extends PacketSocket {
                     sendPayload(pkt);
                 }
             }
-        }, 100, 100, TimeUnit.MILLISECONDS);
+        }, 1, 1, TimeUnit.SECONDS);
     }
 
     public void sendPayloadAndLog(PayloadPacket pkt) {
