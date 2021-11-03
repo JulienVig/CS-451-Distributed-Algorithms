@@ -57,7 +57,7 @@ public class OutputPacketSocket extends PacketSocket {
             int WINDOW_SIZE = 50;
             Iterator<String> it = pktToBeAck.iterator();
             while(it.hasNext() && counter < WINDOW_SIZE){
-                System.out.println("Start retransmit iteration " + counter)
+                System.out.println("Start retransmit iteration " + counter);
                 String pktId = it.next();
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
                 if (pkt != null) {
