@@ -79,15 +79,15 @@ public class InputPacketSocket extends PacketSocket{
                 }
             } else {
                 AckPacket ackPacket = (AckPacket) pkt;
-                System.out.println("Ack " + ackPacket)
+                System.out.println("Ack " + ackPacket);
                 pktToBeAck.remove(ackPacket.getPayloadPktId());
-                System.out.println("Remaining packets to be ack: " + pktToBeAck.size())
+                System.out.println("Remaining packets to be ack: " + pktToBeAck.size());
 //                publish(ackPacket); //TODO remove for perf
             }
         }
 
         private void sendAck(PayloadPacket pkt){
-            System.out.println("Add to sendBuffer ack " + pkt)
+            System.out.println("Add to sendBuffer ack " + pkt);
             AckPacket ackPkt = new AckPacket(pkt);
             try {
                 sendBuffer.put(ackPkt);
