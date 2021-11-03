@@ -41,9 +41,10 @@ public class OutputPacketSocket extends PacketSocket {
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleWithFixedDelay(() -> {
             // System.out.println("Try to retransmit");
-            System.out.println("Pkt to be ack " + pktToBeAck.size());
-            System.out.println("sendbuffer size " + sendBuffer.size());
-            System.out.println("pktSent size " + pktSent.size());
+            // System.out.println("Pkt to be ack " + pktToBeAck.size());
+            // System.out.println("sendbuffer size " + sendBuffer.size());
+            // System.out.println("pktSent size " + pktSent.size());
+            System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": start retransmit");
             if (pktToBeAck.isEmpty()) {
                 System.out.println("No more packets to be ack");
                 return;
@@ -60,7 +61,7 @@ public class OutputPacketSocket extends PacketSocket {
             int WINDOW_SIZE = 50;
             Iterator<String> it = pktToBeAck.iterator();
             while(it.hasNext() && counter < WINDOW_SIZE){
-                System.out.println("Start retransmit iteration " + counter);
+                System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": start retransmit iteration " + counter);
                 String pktId = it.next();
                 // System.out.println("1");
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
