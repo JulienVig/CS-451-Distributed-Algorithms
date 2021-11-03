@@ -22,8 +22,8 @@ public class LogLink implements Runnable {
         this.isReceiver = isReceiver;
         this.nbMsg = nbMsg;
         this.nbHost = nbHost;
-        link.getInputSocket().subscribe(receiveListener);
-        link.getOutputSocket().subscribe(sendListener);
+//        link.getInputSocket().subscribe(receiveListener);
+//        link.getOutputSocket().subscribe(sendListener);
         if (isReceiver){
             for (int id = 1; id <= nbHost; id++) {
                 if(id != myId){
