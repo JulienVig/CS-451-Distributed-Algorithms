@@ -67,7 +67,7 @@ public class OutputPacketSocket extends PacketSocket {
                         System.err.println("Couldn't add packet to sendBuffer queue");
                         e.printStackTrace();
                     }
-                    System.out.println("End send buffer")
+                    System.out.println("End send buffer");
                     counter ++;
                 }
             }
@@ -81,7 +81,7 @@ public class OutputPacketSocket extends PacketSocket {
     }
 
     public void sendPayload(PayloadPacket pkt) {
-        System.out.println("Enter sendPayload")
+        System.out.println("Enter sendPayload");
         try {
             sendBuffer.put(pkt);
         } catch (InterruptedException e) {
@@ -90,7 +90,7 @@ public class OutputPacketSocket extends PacketSocket {
         }
         pktToBeAck.add(pkt.getPktId());
         pktSent.put(pkt.getPktId(), pkt);
-        System.out.println("Out sendPayload")
+        System.out.println("Out sendPayload");
     }
 
     private void send(Packet pkt) {
