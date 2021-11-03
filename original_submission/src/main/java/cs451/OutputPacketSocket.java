@@ -40,8 +40,14 @@ public class OutputPacketSocket extends PacketSocket {
         // Set a periodic retransmission of packets not yet ack
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(() -> {
-            if (pktToBeAck.isEmpty()) return;
-            if (sendBuffer.size() > 50) return;
+            if (pktToBeAck.isEmpty()) {
+                System.out.println("No more packets to be ack");
+                return;
+            }
+            if (sendBuffer.size() > 50) {
+                System.out.println("Don't retransmit because sendBuffer already congested");
+                return;
+            }
             System.out.println("Retransmit " + pktToBeAck);
             for (String pktId : pktToBeAck) {
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
