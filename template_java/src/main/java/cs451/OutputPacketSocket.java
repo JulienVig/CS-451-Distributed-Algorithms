@@ -78,7 +78,7 @@ public class OutputPacketSocket extends PacketSocket {
             DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(), ip, pkt.receiverHost.getPort());
             ds.send(dp);
 //            System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": sent '" + pkt + "'");
-            publish(pkt); //TODO remove for perf
+//            publish(pkt); //TODO remove for perf
         } catch (Exception e) {
             System.err.println("Exception while sending " + pkt + " through " + this);
             e.printStackTrace();
