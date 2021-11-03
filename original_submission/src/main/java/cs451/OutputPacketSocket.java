@@ -40,42 +40,42 @@ public class OutputPacketSocket extends PacketSocket {
         // Set a periodic retransmission of packets not yet ack
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleWithFixedDelay(() -> {
-            System.out.println("Try to retransmit");
+            // System.out.println("Try to retransmit");
             if (pktToBeAck.isEmpty()) {
                 System.out.println("No more packets to be ack");
                 return;
             }
 
-            System.out.println("Before send buffer");
+            // System.out.println("Before send buffer");
             if (sendBuffer.size() > 50) {
                 System.out.println("Don't retransmit because sendBuffer already congested");
                 return;
             }
-            System.out.println("After sendBuffer");
-            System.out.println("Retransmit " + pktToBeAck.size());
+            // System.out.println("After sendBuffer");
+            // System.out.println("Retransmit " + pktToBeAck.size());
             int counter = 0;
             int WINDOW_SIZE = 50;
             Iterator<String> it = pktToBeAck.iterator();
             while(it.hasNext() && counter < WINDOW_SIZE){
-                System.out.println("Start retransmit iteration " + counter);
+                // System.out.println("Start retransmit iteration " + counter);
                 String pktId = it.next();
-                System.out.println("1");
+                // System.out.println("1");
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
-                System.out.println("2");
+                // System.out.println("2");
                 if (pkt != null) {
-                    System.out.println("3");
-                    System.out.println("send buffer length: "+ sendBuffer.size());
+                    // System.out.println("3");
+                    // System.out.println("send buffer length: "+ sendBuffer.size());
                     try {
                         sendBuffer.put(pkt);
                     } catch (InterruptedException e) {
                         System.err.println("Couldn't add packet to sendBuffer queue");
                         e.printStackTrace();
                     }
-                    System.out.println("4");
+                    // System.out.println("4");
                     counter ++;
                 }
             }
-            System.out.println("5");
+            // System.out.println("5");
         }, 1, 1, TimeUnit.SECONDS);
     }
 
