@@ -46,12 +46,19 @@ public class OutputPacketSocket extends PacketSocket {
             }
 //            if (sendBuffer.size() > 50) return; //Only retransmit when sent send buffer is almost empty
             System.out.println("Retransmit " + pktToBeAck);
-            for (String pktId : pktToBeAck) {
+            int counter = 0;
+            int WINDOW_SIZE = 50;
+            Iterator<String> it = pktToBeAck.iterator();
+            while(it.hasNext() && counter < WINDOW_SIZE){
+                String pktId = it.next();
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
                 if (pkt != null) {
                     sendPayload(pkt);
+                    counter ++;
                 }
             }
+//            for (String pktId : pktToBeAck) {
+//            }
         }, 100, 100, TimeUnit.MILLISECONDS);
     }
 
