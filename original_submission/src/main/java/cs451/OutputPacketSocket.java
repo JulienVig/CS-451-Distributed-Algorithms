@@ -52,7 +52,7 @@ public class OutputPacketSocket extends PacketSocket {
                 return;
             }
             System.out.println("After sendBuffer");
-            // System.out.println("Retransmit " + pktToBeAck);
+            System.out.println("Retransmit " + pktToBeAck.size());
             // for (int i = 0; i < Math.min(WINDOW_SIZE, pktToBeAck.size()); i ++){
             int counter = 0;
             int WINDOW_SIZE = 50;
