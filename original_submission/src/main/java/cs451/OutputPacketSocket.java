@@ -59,9 +59,11 @@ public class OutputPacketSocket extends PacketSocket {
             while(it.hasNext() && counter < WINDOW_SIZE){
                 System.out.println("Start retransmit iteration " + counter);
                 String pktId = it.next();
+                System.out.println("1");
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
+                System.out.println("2");
                 if (pkt != null) {
-                    System.out.println("Start add send buffer");
+                    System.out.println("3");
                     System.out.println("send buffer length: "+ sendBuffer.size());
                     try {
                         sendBuffer.put(pkt);
@@ -69,11 +71,11 @@ public class OutputPacketSocket extends PacketSocket {
                         System.err.println("Couldn't add packet to sendBuffer queue");
                         e.printStackTrace();
                     }
-                    System.out.println("End add send buffer");
+                    System.out.println("4");
                     counter ++;
                 }
             }
-            System.out.println("End retransmit");
+            System.out.println("5");
         }, 1, 1, TimeUnit.SECONDS);
     }
 
