@@ -41,6 +41,7 @@ public class OutputPacketSocket extends PacketSocket {
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(() -> {
             if (pktToBeAck.isEmpty()) return;
+            if (sendBuffer.size() > 50) return;
             System.out.println("Retransmit " + pktToBeAck);
             for (String pktId : pktToBeAck) {
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
@@ -52,7 +53,6 @@ public class OutputPacketSocket extends PacketSocket {
     }
 
     public void sendPayloadAndLog(PayloadPacket pkt) {
-        System.out.println("Send " + pkt);
         writer.write(pkt, Operation.BROADCAST);
         sendPayload(pkt);
     }
@@ -69,6 +69,7 @@ public class OutputPacketSocket extends PacketSocket {
     }
 
     private void send(Packet pkt) {
+        System.out.println("Send " + pkt);
         try {
             InetAddress ip = InetAddress.getByName(pkt.receiverHost.getIp());
             DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(), ip, pkt.receiverHost.getPort());
