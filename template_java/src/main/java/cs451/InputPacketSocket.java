@@ -75,12 +75,12 @@ public class InputPacketSocket extends PacketSocket{
                     pktReceived.add(payloadPkt.getPktId());
                     System.out.println("Received " + payloadPkt);
                     writer.write(payloadPkt, Operation.DELIVER); // Format: sender_id seq_nb
-                    publish(payloadPkt); //TODO remove for perf
+//                    publish(payloadPkt); //TODO remove for perf
                 }
             } else {
                 AckPacket ackPacket = (AckPacket) pkt;
                 pktToBeAck.remove(ackPacket.getPayloadPktId());
-                publish(ackPacket); //TODO remove for perf
+//                publish(ackPacket); //TODO remove for perf
             }
         }
 

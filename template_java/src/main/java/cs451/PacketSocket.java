@@ -21,11 +21,11 @@ abstract public class PacketSocket implements Runnable {
 
 
     //TODO remove for perf
-    public void subscribe(BlockingQueue<Packet> listener){
-        listeners.add(listener);
-    }
-
-    public void publish(Packet pkt){
-        for (BlockingQueue<Packet> listener : listeners) listener.offer(pkt);
-    }
+//    public void subscribe(BlockingQueue<Packet> listener){
+//        listeners.add(listener);
+//    }
+//
+//    public void publish(Packet pkt){
+//        for (BlockingQueue<Packet> listener : listeners) listener.offer(pkt);
+//    }
 }

@@ -25,14 +25,14 @@ public class Main {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": start");
+//        System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": start");
         Parser parser = new Parser(args);
         parser.parse();
 
-        long pid = ProcessHandle.current().pid();
-        System.out.println("My PID: " + pid + "\n");
-        System.out.println("From a new terminal type `kill -SIGINT " + pid + "` or `kill -SIGTERM " + pid + "` to stop processing packets\n");
-        System.out.println("My ID: " + parser.myId() + "\n");
+//        long pid = ProcessHandle.current().pid();
+//        System.out.println("My PID: " + pid + "\n");
+//        System.out.println("From a new terminal type `kill -SIGINT " + pid + "` or `kill -SIGTERM " + pid + "` to stop processing packets\n");
+//        System.out.println("My ID: " + parser.myId() + "\n");
         int myId = parser.myId();
         int receiverID = parser.receiverID();
         Host myHost = null;
@@ -47,16 +47,16 @@ public class Main {
         Writer writer = new Writer(parser::writeBroadcast, parser::writeDeliver);
         new Thread(writer).start();
 
-        PerfectLink pl;
+        PerfectLink link;
         if (myId != receiverID) {
-            pl = new PerfectLink(myHost.getPort(), receiverHost.getIp(), receiverHost.getPort(),
+            link = new PerfectLink(myHost.getPort(), receiverHost.getIp(), receiverHost.getPort(),
                     writer, createBroadcastPkt(parser, myHost, receiverHost));
 
-        } else pl = new PerfectLink(myHost.getPort(), receiverHost.getIp(),
+        } else link = new PerfectLink(myHost.getPort(), receiverHost.getIp(),
                                             receiverHost.getPort(), writer);
-        LogLink link = new LogLink(pl, myId == receiverID, myId, parser.hosts().size(),
-                                    parser.nbMessageToSend());
-        initSignalHandlers(writer, link);
+//        LogLink link = new LogLink(pl, myId == receiverID, myId, parser.hosts().size(),
+//                                    parser.nbMessageToSend());
+        initSignalHandlers(writer, null);
         link.run();
     }
 
