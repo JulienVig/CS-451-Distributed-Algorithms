@@ -85,7 +85,7 @@ public class OutputPacketSocket extends PacketSocket {
     }
 
     public void sendPayload(PayloadPacket pkt) {
-        System.out.println("Enter sendPayload");
+        // System.out.println("Enter sendPayload");
         try {
             sendBuffer.put(pkt);
         } catch (InterruptedException e) {
@@ -94,11 +94,11 @@ public class OutputPacketSocket extends PacketSocket {
         }
         pktToBeAck.add(pkt.getPktId());
         pktSent.put(pkt.getPktId(), pkt);
-        System.out.println("Out sendPayload");
+        // System.out.println("Out sendPayload");
     }
 
     private void send(Packet pkt) {
-        System.out.println("Send " + pkt);
+        // System.out.println("Send " + pkt);
         try {
             InetAddress ip = InetAddress.getByName(pkt.receiverHost.getIp());
             DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(), ip, pkt.receiverHost.getPort());
