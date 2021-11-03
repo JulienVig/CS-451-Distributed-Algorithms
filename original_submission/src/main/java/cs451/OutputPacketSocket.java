@@ -52,19 +52,20 @@ public class OutputPacketSocket extends PacketSocket {
                 return;
             }
             // System.out.println("After sendBuffer");
-            // System.out.println("Retransmit " + pktToBeAck.size());
+            System.out.println("Pkt to be ack " + pktToBeAck.size());
+            System.out.println("sendbuffer size " + sendBuffer.size());
+            System.out.println("pktSent size " + pktSent.size());
             int counter = 0;
             int WINDOW_SIZE = 50;
             Iterator<String> it = pktToBeAck.iterator();
             while(it.hasNext() && counter < WINDOW_SIZE){
-                // System.out.println("Start retransmit iteration " + counter);
+                System.out.println("Start retransmit iteration " + counter);
                 String pktId = it.next();
                 // System.out.println("1");
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
                 // System.out.println("2");
                 if (pkt != null) {
                     // System.out.println("3");
-                    // System.out.println("send buffer length: "+ sendBuffer.size());
                     try {
                         sendBuffer.put(pkt);
                     } catch (InterruptedException e) {
