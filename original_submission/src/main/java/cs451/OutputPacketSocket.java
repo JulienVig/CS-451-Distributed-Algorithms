@@ -53,12 +53,20 @@ public class OutputPacketSocket extends PacketSocket {
             }
             System.out.println("After sendBuffer");
             System.out.println("Retransmit " + pktToBeAck);
+            // for (int i = 0; i < Math.min(WINDOW_SIZE, pktToBeAck.size()); i ++){
+            int counter = 0;
+            int WINDOW_SIZE = 50;
             for (String pktId : pktToBeAck) {
+                String pktId = pktToBeAck.
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
                 if (pkt != null) {
                     sendPayload(pkt);
+                    if(++counter > WINDOW_SIZE) {
+                        System.out.println("Exceeded window size")
+                    }
                 }
             }
+            System.out.println("End retransmit")
         }, 1, 1, TimeUnit.SECONDS);
     }
 
