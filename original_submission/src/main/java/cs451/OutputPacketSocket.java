@@ -45,10 +45,13 @@ public class OutputPacketSocket extends PacketSocket {
                 System.out.println("No more packets to be ack");
                 return;
             }
+
+            System.out.println("Before send buffer");
             if (sendBuffer.size() > 50) {
                 System.out.println("Don't retransmit because sendBuffer already congested");
                 return;
             }
+            System.out.println("After sendBuffer");
             System.out.println("Retransmit " + pktToBeAck);
             for (String pktId : pktToBeAck) {
                 PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
