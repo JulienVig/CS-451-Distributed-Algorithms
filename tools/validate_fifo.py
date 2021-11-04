@@ -58,21 +58,25 @@ if __name__ == "__main__":
         dest="proc_num",
         help="Total number of processes",
     )
-
-    parser.add_argument('output', nargs='+')
+    parser.add_argument(
+        "--log_folder",
+        required=True,
+        dest="log_folder",
+        help="log_folder",
+    )
 
     results = parser.parse_args()
-
-    if len(results.output) != results.proc_num:
-        print("Not as many output files as number of processes")
-        exit(1)
-
-    for o in results.output:
+    all_ok = True
+    for o in sorted([f for f in os.listdir(results.log_folder) if f.endswith('.output')])[:results.proc_num]:
         print("Checking {}".format(o))
-        if checkProcess(o):
-            print("Validation failed!")
-        else:
+        if checkProcess(os.path.join(results.log_folder,o)):
             print("Validation OK")
-
+        else:
+            all_ok = False
+            print("Validation failed!")
+    if all_ok:
+        print("All outputs are valid")
+    else:
+        print("Some outputs are not valid")
 
 

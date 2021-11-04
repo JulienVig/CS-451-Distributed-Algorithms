@@ -27,7 +27,7 @@ public class BestEffortBroadcast extends Layer{
         this.upperLayerDeliver = upperLayerDeliver;
         this.upperLayerBroadcast = upperLayerBroadcast;
         ArrayList<PayloadPacket> pktToBroadcast = createBroadcastPkt(nbMessageToSend, myHost, hosts);
-        pl = new PerfectLink(myHost.getPort(), writer, this::deliver, pktToBroadcast);
+        pl = new PerfectLink(myHost.getPort(), this::deliver, pktToBroadcast);
     }
 
     public void broadcast(PayloadPacket pkt){
@@ -48,12 +48,12 @@ public class BestEffortBroadcast extends Layer{
         boolean pktAlreadyLogged = false;
         for(Host host: hosts) {
             if (host != myHost) {
-                for (int i = 10; i >= 1; i--) {
+                for (int i = 1; i <= nbMessageToSend ; i++) {
                     PayloadPacket pkt = new PayloadPacket(i, myHost, host);
                     broadcastPkt.add(pkt);
                     //Only log broadcast once per packet
                     if (!pktAlreadyLogged){
-                        System.out.println("Broadcast " + pkt.getSimpleId());
+//                        System.out.println("Broadcast " + pkt.getSimpleId());
                         upperLayerBroadcast.accept(pkt);
                         writer.write(pkt, Operation.BROADCAST);
                     }

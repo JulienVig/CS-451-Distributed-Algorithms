@@ -12,25 +12,24 @@ import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class PerfectLink extends Layer {
-    private volatile LinkedHashSet<String> pktToBeAck = new LinkedHashSet<>();
+    private volatile ConcurrentSkipListSet<String> pktToBeAck =
+            new ConcurrentSkipListSet<>(new PayloadPacket.PayloadPacketComparator());
     private volatile LinkedHashMap<String, PayloadPacket> pktSent = new LinkedHashMap<>();
     private volatile HashSet<String> pktReceived = new HashSet<>();
     private BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
     private Consumer<Packet> upperLayerDeliver;
-    private Writer writer;
     private FairLossLink link;
 
-    public PerfectLink(int myPort, Writer writer, Consumer<Packet> upperLayerDeliver) {
-        this.writer = writer;
+    public PerfectLink(int myPort, Consumer<Packet> upperLayerDeliver) {
         this.upperLayerDeliver = upperLayerDeliver;
         this.link = new FairLossLink(myPort, sendBuffer, this::deliver);
         new Thread(link).start();
         new Thread(this::startRetransmissions).start();
     }
 
-    public PerfectLink(int myPort, Writer writer, Consumer<Packet> upperLayerDeliver,
+    public PerfectLink(int myPort, Consumer<Packet> upperLayerDeliver,
                        ArrayList<PayloadPacket> broadcastPkt) {
-        this(myPort, writer, upperLayerDeliver);
+        this(myPort, upperLayerDeliver);
         for (PayloadPacket pkt : broadcastPkt) sendPayload(pkt);
     }
 
@@ -66,8 +65,9 @@ public class PerfectLink extends Layer {
             System.err.println("Couldn't add packet to sendBuffer queue");
             e.printStackTrace();
         }
-        pktToBeAck.add(pkt.getPktId());
-        pktSent.put(pkt.getPktId(), pkt);
+        String pktId = pkt.getPktId();
+        pktToBeAck.add(pktId);
+        pktSent.put(pktId, pkt);
     }
 
     @Override
@@ -104,15 +104,22 @@ public class PerfectLink extends Layer {
     }
 
     private void startRetransmissions(){
+        final int WINDOW_SIZE = 50;
         // Set a periodic retransmission of packets not yet ack
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(() -> {
             if (pktToBeAck.isEmpty()) return;
+            if (sendBuffer.size() > WINDOW_SIZE) return;
 //            System.out.println("Retransmit " + pktToBeAck);
-            for (String pktId : pktToBeAck) {
-                PayloadPacket pkt = pktSent.getOrDefault(pktId, null);
-                if (pkt != null) {
+            int counter = 0;
+            System.out.println(pktToBeAck);
+            Iterator<String> iter = pktToBeAck.iterator();
+            PayloadPacket pkt;
+            while(iter.hasNext() && counter < WINDOW_SIZE){
+                if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
                     sendPayload(pkt);
+                    System.out.println("Retransmit packet " + pkt);
+                    counter++;
                 }
             }
         }, 100, 100, TimeUnit.MILLISECONDS);

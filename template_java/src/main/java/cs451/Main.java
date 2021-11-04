@@ -34,6 +34,9 @@ public class Main {
         System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": start");
         Parser parser = new Parser(args);
         parser.parse();
+        Writer writer = new Writer(parser::writeBroadcast, parser::writeDeliver);
+        initSignalHandlers(writer, null);
+        new Thread(writer).start();
 
 //        long pid = ProcessHandle.current().pid();
 //        System.out.println("My PID: " + pid + "\n");
@@ -44,11 +47,8 @@ public class Main {
         Host myHost = null;
         for (Host host : parser.hosts()) if (host.getId() == myId) myHost = host;
 
-        Writer writer = new Writer(parser::writeBroadcast, parser::writeDeliver);
-        new Thread(writer).start();
         FIFOBroadcast fifo = new FIFOBroadcast(parser.nbMessageToSend(), writer,
                 myHost, parser.hosts());
-        initSignalHandlers(writer, null);
         fifo.run();
     }
 
