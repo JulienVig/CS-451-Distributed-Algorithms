@@ -9,16 +9,13 @@ import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class OutputPacketSocket extends PacketSocket {
     private volatile HashMap<String, PayloadPacket> pktSent;
 
     public OutputPacketSocket(DatagramSocket ds, Writer writer, LinkedHashMap<String, PayloadPacket> pktSent,
-                              LinkedHashSet<String> pktToBeAck, BlockingQueue<Packet> sendBuffer) {
+                              ConcurrentLinkedQueue<String> pktToBeAck, BlockingQueue<Packet> sendBuffer) {
         super(ds, writer, pktToBeAck, sendBuffer);
         this.pktSent = pktSent;
     }
@@ -60,6 +57,7 @@ public class OutputPacketSocket extends PacketSocket {
             int counter = 0;
             int WINDOW_SIZE = 50;
             Iterator<String> it = pktToBeAck.iterator();
+            try{
             while(it.hasNext() && counter < WINDOW_SIZE){
                 System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": start retransmit iteration " + counter);
                 String pktId = it.next();
@@ -78,6 +76,10 @@ public class OutputPacketSocket extends PacketSocket {
                     counter ++;
                 }
             }
+            } catch (Throwable e){
+                e.printStackTrace();
+            }
+
             // System.out.println("5");
         }, 1, 1, TimeUnit.SECONDS);
     }
@@ -95,7 +97,7 @@ public class OutputPacketSocket extends PacketSocket {
             System.err.println("Couldn't add packet to sendBuffer queue");
             e.printStackTrace();
         }
-        pktToBeAck.add(pkt.getPktId());
+        if (!pktToBeAck.contains(pkt.getPktId())) pktToBeAck.add(pkt.getPktId());
         pktSent.put(pkt.getPktId(), pkt);
         // System.out.println("Out sendPayload");
     }

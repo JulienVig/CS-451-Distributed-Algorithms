@@ -9,7 +9,7 @@ public class PerfectLink implements Runnable {
     private int myPort;
     private String toIp;
     private int toPort;
-    private volatile LinkedHashSet<String> pktToBeAck = new LinkedHashSet<>();
+    private volatile ConcurrentLinkedQueue<String> pktToBeAck = new ConcurrentLinkedQueue<>();
     private volatile LinkedHashMap<String, PayloadPacket> pktSent = new LinkedHashMap<>();
     private BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
     private DatagramSocket ds;

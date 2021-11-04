@@ -9,6 +9,7 @@ import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class InputPacketSocket extends PacketSocket{
@@ -16,7 +17,7 @@ public class InputPacketSocket extends PacketSocket{
     private Responder responder;
 
     public InputPacketSocket(DatagramSocket ds, Writer writer,
-                             LinkedHashSet<String> pktToBeAck, BlockingQueue<Packet> sendBuffer) {
+                             ConcurrentLinkedQueue<String> pktToBeAck, BlockingQueue<Packet> sendBuffer) {
         super(ds, writer, pktToBeAck, sendBuffer);
         responder = new Responder();
         new Thread(responder).start();
