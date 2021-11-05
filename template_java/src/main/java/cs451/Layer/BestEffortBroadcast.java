@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 public class BestEffortBroadcast extends Layer{
     private Writer writer;
     private PerfectLink pl;
-    private Consumer<Packet> upperLayerDeliver;
+//    private Consumer<Packet> upperLayerDeliver;
     private Consumer<PayloadPacket> upperLayerBroadcast;
     private List<Host> hosts;
     private Host myHost;
@@ -31,7 +31,7 @@ public class BestEffortBroadcast extends Layer{
     }
 
     public void broadcast(PayloadPacket pkt){
-        System.out.println("Broadcast " +pkt.getSimpleId());
+//        System.out.println("Broadcast " +pkt.getSimpleId());
         for(Host host: hosts) {
             if (host != myHost) {
                 // Create new packet with same originalSender and seqNb
@@ -66,7 +66,7 @@ public class BestEffortBroadcast extends Layer{
 
     @Override
     public void deliver(Packet pkt) {
-        System.out.println("Beb deliver " + pkt);
+//        System.out.println("Beb deliver " + pkt);
         if (upperLayerDeliver != null) upperLayerDeliver.accept(pkt);
     }
 

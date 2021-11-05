@@ -1,41 +1,37 @@
 package cs451;
 
-import cs451.Layer.BestEffortBroadcast;
 import cs451.Layer.FIFOBroadcast;
-import cs451.Layer.LogLink;
-import cs451.Layer.UniformReliableBroadcast;
+import cs451.Layer.LogLayer;
 import cs451.Parser.Parser;
 
 import java.time.ZonedDateTime;
 
 public class Main {
 
-    private static void handleSignal(Writer writer, LogLink link) {
+    private static void handleSignal(Writer writer) {
         //immediately stop network packet processing
         System.out.println("Immediately stopping network packet processing.");
 
         //write/flush output file if necessary
         writer.flush();
-        if (link != null) link.printState();
         System.out.println("Writing output.");
     }
 
-    private static void initSignalHandlers(Writer writer, LogLink link) {
+    private static void initSignalHandlers(Writer writer) {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                handleSignal(writer, link);
+                handleSignal(writer);
             }
         });
     }
 
     public static void main(String[] args) {
-
-        System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": start");
+        System.out.println("start " + ZonedDateTime.now().toInstant().toEpochMilli());
         Parser parser = new Parser(args);
         parser.parse();
         Writer writer = new Writer(parser::writeBroadcast, parser::writeDeliver);
-        initSignalHandlers(writer, null);
+        initSignalHandlers(writer);
         new Thread(writer).start();
 
 //        long pid = ProcessHandle.current().pid();
@@ -47,9 +43,9 @@ public class Main {
         Host myHost = null;
         for (Host host : parser.hosts()) if (host.getId() == myId) myHost = host;
 
-        FIFOBroadcast fifo = new FIFOBroadcast(parser.nbMessageToSend(), writer,
+        LogLayer log = new LogLayer(parser.nbMessageToSend(), writer,
                 myHost, parser.hosts());
-        fifo.run();
+        log.run();
     }
 
 }

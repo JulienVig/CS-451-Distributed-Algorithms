@@ -8,6 +8,7 @@ import cs451.Writer;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public class FIFOBroadcast extends Layer {
 
@@ -18,7 +19,9 @@ public class FIFOBroadcast extends Layer {
     private UniformReliableBroadcast urb;
     private Writer writer;
 
-    public FIFOBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts) {
+    public FIFOBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts,
+                         Consumer<Packet> upperLayerDeliver) {
+        this.upperLayerDeliver = upperLayerDeliver;
         this.writer = writer;
         for (Host host : hosts) next.put(host.getId(), 1);
         urb = new UniformReliableBroadcast(nbMessageToSend, writer, myHost, hosts, this::deliver);
@@ -38,6 +41,7 @@ public class FIFOBroadcast extends Layer {
                 processPkt(delivered.take());
             } catch (InterruptedException e){
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }
     }

@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 public class FairLossLink extends Layer{
     private DatagramSocket ds;
     private BlockingQueue<Packet> sendBuffer;
-    private Consumer<Packet> upperLayerDeliver;
+//    private Consumer<Packet> upperLayerDeliver;
 
     public FairLossLink(int myPort, BlockingQueue<Packet> sendBuffer,
                         Consumer<Packet> upperLayerDeliver) {
@@ -24,6 +24,7 @@ public class FairLossLink extends Layer{
         } catch (SocketException e) {
             System.err.println("Could not initialize socket");
             e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
         this.sendBuffer = sendBuffer;
         this.upperLayerDeliver = upperLayerDeliver;
@@ -38,12 +39,11 @@ public class FairLossLink extends Layer{
                 buf = new byte[512];
                 DatagramPacket dp = new DatagramPacket(buf, buf.length);
                 ds.receive(dp);
-                Packet pkt = deserializePkt(dp.getData());
-//                System.out.println(Thread.currentThread().getId()  +"Add " + pkt +" to delivered");
-                upperLayerDeliver.accept(pkt);
+                upperLayerDeliver.accept(deserializePkt(dp.getData()));
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -58,6 +58,7 @@ public class FairLossLink extends Layer{
                 sendPacket(sendBuffer.take());
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -67,8 +68,6 @@ public class FairLossLink extends Layer{
             InetAddress ip = InetAddress.getByName(pkt.getReceiverHost().getIp());
             DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(), ip, pkt.getReceiverHost().getPort());
             ds.send(dp);
-//            System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": sent '" + pkt + "'");
-//            deliver.accept(pkt);
         } catch (Exception e) {
             System.err.println("Exception while sending " + pkt + " through " + this);
             e.printStackTrace();

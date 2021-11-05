@@ -1,13 +1,12 @@
 package cs451.Layer;
 
-import cs451.Operation;
 import cs451.Packet.AckPacket;
 import cs451.Packet.Packet;
 import cs451.Packet.PayloadPacket;
-import cs451.Writer;
 
-import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
@@ -17,7 +16,7 @@ public class PerfectLink extends Layer {
     private ConcurrentHashMap<String, PayloadPacket> pktSent = new ConcurrentHashMap<>();
     private HashSet<String> pktReceived = new HashSet<>();
     private BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
-    private Consumer<Packet> upperLayerDeliver;
+//    private Consumer<Packet> upperLayerDeliver;
     private FairLossLink link;
 
     public PerfectLink(int myPort, Consumer<Packet> upperLayerDeliver) {
@@ -51,6 +50,7 @@ public class PerfectLink extends Layer {
                 processPacket(receivedPkt);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -102,18 +102,23 @@ public class PerfectLink extends Layer {
         // Set a periodic retransmission of packets not yet ack
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleWithFixedDelay(() -> {
-            if (pktToBeAck.isEmpty()) return;
-            if (sendBuffer.size() > WINDOW_SIZE) return;
+            try {
+                if (pktToBeAck.isEmpty()) return;
+                if (sendBuffer.size() > WINDOW_SIZE) return;
 
-            int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
-            System.out.println(pktToBeAck);
-            Iterator<String> iter = pktToBeAck.iterator();
-            PayloadPacket pkt;
-            while(iter.hasNext() && counter < WINDOW_SIZE){
-                if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
-                    sendPayload(pkt);
-                    counter++;
+                int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
+                System.out.println(pktToBeAck);
+                Iterator<String> iter = pktToBeAck.iterator();
+                PayloadPacket pkt;
+                while (iter.hasNext() && counter < WINDOW_SIZE) {
+                    if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
+                        sendPayload(pkt);
+                        counter++;
+                    }
                 }
+            } catch (Throwable e){
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }, 100, 100, TimeUnit.MILLISECONDS);
     }

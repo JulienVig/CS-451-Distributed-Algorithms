@@ -48,6 +48,11 @@ def checkProcess(filePath):
 
     return True
 
+def checkStderr(stderr):
+    with open(stderr) as f:
+        return len(f.readlines()) == 0 # True iff stderr file is empty
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
@@ -67,11 +72,18 @@ if __name__ == "__main__":
 
     results = parser.parse_args()
     all_ok = True
-    for o in sorted([f for f in os.listdir(results.log_folder) if f.endswith('.output')])[:results.proc_num]:
+    output_files = sorted([f for f in os.listdir(results.log_folder) if f.endswith('.output')])
+    stdout_files = sorted([f for f in os.listdir(results.log_folder) if f.endswith('.stdout')])
+    stderr_files = sorted([f for f in os.listdir(results.log_folder) if f.endswith('.stderr')])
+    for i in range(results.proc_num):
+        o = output_files[i]
         print("Checking {}".format(o))
         if not checkProcess(os.path.join(results.log_folder,o)):
             all_ok = False
             print("Validation failed!")
+        if not checkStderr(os.path.join(results.log_folder, stderr_files[i])):
+            print("Stderr not empty!")
+
     if all_ok:
         print("All outputs are valid")
     else:
