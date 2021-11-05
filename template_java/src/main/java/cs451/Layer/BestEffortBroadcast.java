@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 public class BestEffortBroadcast extends Layer{
     private Writer writer;
     private PerfectLink pl;
-//    private Consumer<Packet> upperLayerDeliver;
     private Consumer<PayloadPacket> upperLayerBroadcast;
     private List<Host> hosts;
     private Host myHost;
@@ -66,7 +65,6 @@ public class BestEffortBroadcast extends Layer{
 
     @Override
     public void deliver(Packet pkt) {
-//        System.out.println("Beb deliver " + pkt);
         if (upperLayerDeliver != null) upperLayerDeliver.accept(pkt);
     }
 

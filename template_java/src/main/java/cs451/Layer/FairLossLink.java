@@ -15,7 +15,6 @@ import java.util.function.Consumer;
 public class FairLossLink extends Layer{
     private DatagramSocket ds;
     private BlockingQueue<Packet> sendBuffer;
-//    private Consumer<Packet> upperLayerDeliver;
 
     public FairLossLink(int myPort, BlockingQueue<Packet> sendBuffer,
                         Consumer<Packet> upperLayerDeliver) {

@@ -16,7 +16,6 @@ public class PerfectLink extends Layer {
     private ConcurrentHashMap<String, PayloadPacket> pktSent = new ConcurrentHashMap<>();
     private HashSet<String> pktReceived = new HashSet<>();
     private BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
-//    private Consumer<Packet> upperLayerDeliver;
     private FairLossLink link;
 
     public PerfectLink(int myPort, Consumer<Packet> upperLayerDeliver) {
@@ -102,23 +101,18 @@ public class PerfectLink extends Layer {
         // Set a periodic retransmission of packets not yet ack
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleWithFixedDelay(() -> {
-            try {
-                if (pktToBeAck.isEmpty()) return;
-                if (sendBuffer.size() > WINDOW_SIZE) return;
+            if (pktToBeAck.isEmpty()) return;
+            if (sendBuffer.size() > WINDOW_SIZE) return;
 
-                int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
-                System.out.println(pktToBeAck);
-                Iterator<String> iter = pktToBeAck.iterator();
-                PayloadPacket pkt;
-                while (iter.hasNext() && counter < WINDOW_SIZE) {
-                    if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
-                        sendPayload(pkt);
-                        counter++;
-                    }
+            int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
+
+            Iterator<String> iter = pktToBeAck.iterator();
+            PayloadPacket pkt;
+            while (iter.hasNext() && counter < WINDOW_SIZE) {
+                if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
+                    sendPayload(pkt);
+                    counter++;
                 }
-            } catch (Throwable e){
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
             }
         }, 100, 100, TimeUnit.MILLISECONDS);
     }

@@ -25,6 +25,7 @@ public class LogLayer extends Layer{
         if (++deliveredCounter == nbMessageToDeliver) {
             System.out.println("end " + ZonedDateTime.now().toInstant().toEpochMilli());
         }
+//        System.out.println(deliveredCounter);
     }
 
     @Override

@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 
 public class FIFOBroadcast extends Layer {
 
-    private HashMap<Integer, Integer> next = new HashMap<>(); //Map<Host id, seq nb>
+    private ConcurrentHashMap<Integer, Integer> next = new ConcurrentHashMap<>(); //Map<Host id, seq nb>
     // Use Map<simple Id, packet> because we don't want equality tested on
     // pktId but only on simpleId
     private ConcurrentHashMap<String, PayloadPacket> pending = new ConcurrentHashMap<>();
@@ -32,6 +32,7 @@ public class FIFOBroadcast extends Layer {
     @Override
     public void deliver(Packet pkt) {
         delivered.offer(pkt);
+        upperLayerDeliver.accept(pkt);
     }
 
     @Override

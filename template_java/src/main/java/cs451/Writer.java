@@ -34,19 +34,27 @@ public class Writer implements Runnable{
         }
     }
 
+    @Override
+    public void run() {
+        while (true) emptyBuffer();
+    }
+
     public void flush(){
+        buffer.forEach(this::writeLog);
+    }
+
+    private void emptyBuffer(){
             try {
-                OperationLog log = buffer.take();
-                if (log.getType() == BROADCAST) writeBroadcast.accept(log.getIntContent());
-                else if (log.getType() == DELIVER) writeDeliver.accept(log.getContent());
-                else System.err.println("Unrecognized OperationLog type: " + log.getType());
+                writeLog(buffer.take());
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
     }
 
-    @Override
-    public void run() {
-        while (true) flush();
+    private void writeLog(OperationLog log){
+        if (log.getType() == BROADCAST) writeBroadcast.accept(log.getIntContent());
+        else if (log.getType() == DELIVER) writeDeliver.accept(log.getContent());
+        else System.err.println("Unrecognized OperationLog type: " + log.getType());
     }
 }

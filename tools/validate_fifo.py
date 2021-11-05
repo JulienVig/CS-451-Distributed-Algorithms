@@ -52,6 +52,22 @@ def checkStderr(stderr):
     with open(stderr) as f:
         return len(f.readlines()) == 0 # True iff stderr file is empty
 
+def check_stdout(stdout):
+    with open(stdout) as f:
+        lines = f.readlines()
+        start_line = [line for line in lines if "start" in line]
+        if len(start_line) != 1:
+            print("Multiple (or None) start printed")
+        else:
+            start = float(start_line[0].split(" ")[1])
+
+        end_line = [line for line in lines if "end" in line]
+        if len(end_line) != 1:
+            print("Multiple (or None) end printed")
+        else:
+            end = float(end_line[0].split(" ")[1])
+        return start, end
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -71,10 +87,18 @@ if __name__ == "__main__":
     )
 
     results = parser.parse_args()
+    files = os.listdir(results.log_folder)
+    output_files = sorted([f for f in files if f.endswith('.output')])
+    stdout_files = sorted([f for f in files if f.endswith('.stdout')])
+    stderr_files = sorted([f for f in files if f.endswith('.stderr')])
+
     all_ok = True
-    output_files = sorted([f for f in os.listdir(results.log_folder) if f.endswith('.output')])
-    stdout_files = sorted([f for f in os.listdir(results.log_folder) if f.endswith('.stdout')])
-    stderr_files = sorted([f for f in os.listdir(results.log_folder) if f.endswith('.stderr')])
+    earliest_process = -1
+    latest_process = -1
+    earliest_start = float('inf')
+    latest_start = float('-inf')
+    earliest_end = float('inf')
+    latest_end = float('-inf')
     for i in range(results.proc_num):
         o = output_files[i]
         print("Checking {}".format(o))
@@ -84,9 +108,25 @@ if __name__ == "__main__":
         if not checkStderr(os.path.join(results.log_folder, stderr_files[i])):
             print("Stderr not empty!")
 
-    if all_ok:
-        print("All outputs are valid")
-    else:
-        print("Some outputs are not valid")
+        start, end = check_stdout(os.path.join(results.log_folder, stdout_files[i]))
+        if start < earliest_start:
+            earliest_start = start
+            earliest_process = stdout_files[i]
+        if start > latest_start:
+            latest_start = start
 
+        if end < earliest_end:
+            earliest_end = end
+        if end > latest_end:
+            latest_end = end
+            latest_process = stdout_files[i]
+
+    
+    print("All outputs are valid" if all_ok else "Some outputs are not valid")
+    # print("First process to start:", earliest_process)
+    # print("Last process to end:", latest_process)
+    print("Time between first start and last start:", latest_start - earliest_start, "ms")
+    print("Time between last start and last end:", latest_end - latest_start, "ms")
+    print("Time between last start and first end:", earliest_end - latest_start, "ms")
+    print("Overall time:", latest_end - earliest_start, "ms")
 

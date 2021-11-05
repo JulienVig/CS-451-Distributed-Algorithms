@@ -19,7 +19,6 @@ public class UniformReliableBroadcast extends Layer{
     private HashMap<String, HashSet<Integer>> ack = new HashMap<>(); // Map<pkt id, host id>
     private BestEffortBroadcast beb;
     private double quorum;
-//    private Consumer<Packet> upperLayerDeliver;
 
     public UniformReliableBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts,
                                     Consumer<Packet> upperLayerDeliver){
@@ -83,7 +82,6 @@ public class UniformReliableBroadcast extends Layer{
             ack.remove((simpleId));
             pending.remove(simpleId);
             upperLayerDeliver.accept(pkt);
-            System.out.println("URB deliver " + pkt.getSimpleId());
         }
     }
 
