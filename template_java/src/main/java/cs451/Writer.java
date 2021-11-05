@@ -2,14 +2,16 @@ package cs451;
 
 import cs451.Packet.PayloadPacket;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
+
+import static cs451.Operation.BROADCAST;
+import static cs451.Operation.DELIVER;
 
 
 public class Writer implements Runnable{
-    private volatile Queue<Integer> broadcastBuffer = new ConcurrentLinkedQueue<>();
-    private volatile Queue<String> deliverBuffer  = new ConcurrentLinkedQueue<>();
+    private BlockingQueue<OperationLog> buffer = new LinkedBlockingQueue<>();
     private Consumer<Integer> writeBroadcast;
     private Consumer<String> writeDeliver;
 
@@ -20,8 +22,12 @@ public class Writer implements Runnable{
 
     public void write(PayloadPacket pkt, Operation op){
         try {
-            if (op == Operation.BROADCAST) broadcastBuffer.add(pkt.getSeqNb());
-            if (op == Operation.DELIVER) deliverBuffer.add(pkt.getOriginalSenderId() + " " + pkt.getSeqNb());
+            OperationLog log = null;
+            if (op == BROADCAST) log = new OperationLog(BROADCAST, pkt.getSeqNb());
+            else if (op == DELIVER)  log = new OperationLog(DELIVER, pkt.getOriginalSenderId() + " " + pkt.getSeqNb());
+            else System.err.println("Unrecognized write Operation type: " + op);
+            
+            if (log != null) buffer.add(log);
         } catch(Exception e){
             System.err.println("Couldn't add packet log to write buffer");
             e.printStackTrace();
@@ -29,24 +35,18 @@ public class Writer implements Runnable{
     }
 
     public void flush(){
-        emptyBroadcastBuffer();
-        emptyDeliverBuffer();
-    }
-
-    private void emptyBroadcastBuffer(){
-        Integer elem;
-        while((elem = broadcastBuffer.poll()) != null) writeBroadcast.accept(elem);
-    }
-    private void emptyDeliverBuffer(){
-        String elem;
-        while((elem = deliverBuffer.poll()) != null) writeDeliver.accept(elem);
+            try {
+                OperationLog log = buffer.take();
+                if (log.getType() == BROADCAST) writeBroadcast.accept(log.getIntContent());
+                else if (log.getType() == DELIVER) writeDeliver.accept(log.getContent());
+                else System.err.println("Unrecognized OperationLog type: " + log.getType());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
     }
 
     @Override
     public void run() {
-        while (true) {
-            if(!broadcastBuffer.isEmpty()) emptyBroadcastBuffer();
-            if(!deliverBuffer.isEmpty()) emptyDeliverBuffer();
-        }
+        while (true) flush();
     }
 }

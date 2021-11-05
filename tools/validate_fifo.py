@@ -69,9 +69,7 @@ if __name__ == "__main__":
     all_ok = True
     for o in sorted([f for f in os.listdir(results.log_folder) if f.endswith('.output')])[:results.proc_num]:
         print("Checking {}".format(o))
-        if checkProcess(os.path.join(results.log_folder,o)):
-            print("Validation OK")
-        else:
+        if not checkProcess(os.path.join(results.log_folder,o)):
             all_ok = False
             print("Validation failed!")
     if all_ok:

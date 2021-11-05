@@ -12,10 +12,10 @@ import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class PerfectLink extends Layer {
-    private volatile ConcurrentSkipListSet<String> pktToBeAck =
+    private ConcurrentSkipListSet<String> pktToBeAck =
             new ConcurrentSkipListSet<>(new PayloadPacket.PayloadPacketComparator());
-    private volatile LinkedHashMap<String, PayloadPacket> pktSent = new LinkedHashMap<>();
-    private volatile HashSet<String> pktReceived = new HashSet<>();
+    private ConcurrentHashMap<String, PayloadPacket> pktSent = new ConcurrentHashMap<>();
+    private HashSet<String> pktReceived = new HashSet<>();
     private BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
     private Consumer<Packet> upperLayerDeliver;
     private FairLossLink link;
@@ -37,7 +37,6 @@ public class PerfectLink extends Layer {
     public void deliver(Packet pkt) {
         try {
             delivered.put(pkt);
-//            System.out.println(Thread.currentThread().getId()  +" PL delivered:" + pkt);
         } catch(InterruptedException e){
             System.err.println("Couldn't add packet to receiveBuffer queue");
             e.printStackTrace();
@@ -48,9 +47,7 @@ public class PerfectLink extends Layer {
     public void run() {
         while (true) {
             try {
-//                System.out.println(Thread.currentThread().getId()  +" delivered " + delivered);
                 Packet receivedPkt = delivered.take();
-//                System.out.println(Thread.currentThread().getId()  +" consumed: " + receivedPkt);
                 processPacket(receivedPkt);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -76,15 +73,12 @@ public class PerfectLink extends Layer {
     }
 
     private void processPacket(Packet pkt){
-//            assert pkt instanceof PayloadPacket || pkt instanceof AckPacket;
-//        System.out.println(ZonedDateTime.now().toInstant().toEpochMilli() + ": received " + pkt);
         if (pkt instanceof PayloadPacket) {
             PayloadPacket payloadPkt = (PayloadPacket) pkt;
             sendAck(payloadPkt); // Always send ack when receiving a payload packet
             if (!pktReceived.contains(payloadPkt.getPktId())) {
                 //If pkt not already processed in the past
                 pktReceived.add(payloadPkt.getPktId());
-//                System.out.println(Thread.currentThread().getId()  +"Received " + payloadPkt);
                 upperLayerDeliver.accept(payloadPkt);
             }
         } else {
@@ -107,18 +101,17 @@ public class PerfectLink extends Layer {
         final int WINDOW_SIZE = 50;
         // Set a periodic retransmission of packets not yet ack
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-        executorService.scheduleAtFixedRate(() -> {
+        executorService.scheduleWithFixedDelay(() -> {
             if (pktToBeAck.isEmpty()) return;
             if (sendBuffer.size() > WINDOW_SIZE) return;
-//            System.out.println("Retransmit " + pktToBeAck);
-            int counter = 0;
+
+            int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
             System.out.println(pktToBeAck);
             Iterator<String> iter = pktToBeAck.iterator();
             PayloadPacket pkt;
             while(iter.hasNext() && counter < WINDOW_SIZE){
                 if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
                     sendPayload(pkt);
-                    System.out.println("Retransmit packet " + pkt);
                     counter++;
                 }
             }
