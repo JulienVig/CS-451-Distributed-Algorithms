@@ -12,19 +12,18 @@ import java.util.function.Consumer;
 
 public class FIFOBroadcast extends Layer {
 
-    private ConcurrentHashMap<Integer, Integer> next = new ConcurrentHashMap<>(); //Map<Host id, seq nb>
+    private final ConcurrentHashMap<Integer, Integer> next = new ConcurrentHashMap<>(); //Map<Host id, seq nb>
     // Use Map<simple Id, packet> because we don't want equality tested on
     // pktId but only on simpleId
-    private ConcurrentHashMap<String, PayloadPacket> pending = new ConcurrentHashMap<>();
-    private UniformReliableBroadcast urb;
-    private Writer writer;
+    private final ConcurrentHashMap<String, PayloadPacket> pending = new ConcurrentHashMap<>();
+    private final Writer writer;
 
     public FIFOBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts,
                          Consumer<Packet> upperLayerDeliver) {
         this.upperLayerDeliver = upperLayerDeliver;
         this.writer = writer;
         for (Host host : hosts) next.put(host.getId(), 1);
-        urb = new UniformReliableBroadcast(nbMessageToSend, writer, myHost, hosts, this::deliver);
+        UniformReliableBroadcast urb = new UniformReliableBroadcast(nbMessageToSend, writer, myHost, hosts, this::deliver);
         new Thread(urb).start();
 
     }
@@ -62,7 +61,7 @@ public class FIFOBroadcast extends Layer {
                 PayloadPacket pkt = entry.getValue();
                 hostId = pkt.getOriginalSenderId();
                 if (pkt.getSeqNb() == next.get(hostId)) {
-                    System.out.println("FIFO deliver " + pkt.getSimpleId());
+//                    System.out.println("FIFO deliver " + pkt.getSimpleId());
                     writer.write(pkt, Operation.DELIVER);
                     next.put(hostId, next.get(hostId) + 1);
                     pending.remove(entry.getKey());

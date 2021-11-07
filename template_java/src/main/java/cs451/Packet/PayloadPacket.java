@@ -3,35 +3,35 @@ package cs451.Packet;
 
 import cs451.Host;
 
+import java.io.*;
 import java.util.Comparator;
 
-public class PayloadPacket extends Packet implements Comparable<PayloadPacket>{
+public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPacket>{
     private int seqNb;
     private String payload; // The payload is not used
-    private Host originalSenderHost;
+    private int originalSenderId;
 
-    public PayloadPacket(int seqNb, Host originalSenderHost, Host senderHost, Host receiverHost) {
-        setPktId(originalSenderHost.getId() + " " + senderHost.getId() + " " + receiverHost.getId() + " " + seqNb);
+    public PayloadPacket(int seqNb, int originalSenderId, int senderId, int receiverId) {
+//        setPktId(createPktId(seqNb, originalSenderHost, senderHost, receiverHost));
+//        System.out.print(getPktId() + " - ");
+
+        setPktId(originalSenderId + " " + senderId + " " + receiverId + " " + seqNb);
         this.seqNb = seqNb;
-        setSenderHost(senderHost);
-        setReceiverHost(receiverHost);
-        this.originalSenderHost = originalSenderHost;
+        setSenderId(senderId);
+        setReceiverId(receiverId);
+        this.originalSenderId = originalSenderId;
         this.payload = String.valueOf(seqNb);
 
-        // /!\ Serialize at the last line of the constructor
-        setByteArray(serializeToBytes());
+//        // /!\ Serialize at the last line of the constructor
+//        setByteArray(serializeToBytes());
     }
 
     public String getSimpleId(){
         return getOriginalSenderId() + " " + seqNb;
     }
 
-    public PayloadPacket(int seqNb, Host senderHost, Host receiverHost){
-        this(seqNb, senderHost, senderHost, receiverHost);
-    }
-
-    public int getSenderId() {
-        return getSenderHost().getId();
+    public PayloadPacket(int seqNb, int senderId, int receiverId){
+        this(seqNb, senderId, senderId, receiverId);
     }
 
     public int getSeqNb() {
@@ -39,23 +39,47 @@ public class PayloadPacket extends Packet implements Comparable<PayloadPacket>{
     }
 
     public int getOriginalSenderId() {
-        return originalSenderHost.getId();
-    }
-
-    public Host getOriginalSenderHost() {
-        return originalSenderHost;
+        return originalSenderId;
     }
 
     @Override
     public String toString() {
         return getPktId();
+//        return originalSenderHost.getId() + " " + getSenderHost().getId() + " " + getReceiverHost().getId() + " " + seqNb;
 
     }
 
     @Override
-    public int compareTo(PayloadPacket o) {
-        return Integer.compare(this.seqNb, o.getSeqNb());
+    public void readObject(ObjectInputStream in) throws IOException{
+        seqNb = in.readInt();
+        originalSenderId = in.readInt();
+        setSenderId(in.readInt());
+        setReceiverId(in.readInt());
+        payload = String.valueOf(seqNb);
+        setPktId(originalSenderId + " " + getSenderId() + " " + getReceiverId() + " " + seqNb);
+
+        // /!\ Serialize at the last line of the constructor
+        setByteArray(serializeToBytes());
     }
+
+    @Override
+    public void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeInt(getSeqNb());
+        out.writeInt(getOriginalSenderId());
+        out.writeInt(getSenderId());
+        out.writeInt(getReceiverId());
+    }
+
+//    public static Packet deserializePkt(ObjectInputStream in) throws IOException {
+//        return new PayloadPacket(in.readInt(), in.readInt(), in.readInt(), in.readInt());
+//    }
+
+//    @Override
+//    public int compareTo(PayloadPacket o) {
+//        int seqNbOrder = Integer.compare(this.seqNb, o.getSeqNb());
+//        if (seqNbOrder != 0) return seqNbOrder;
+//        return this.getPktId().compareTo(o.getPktId());
+//    }
 
     public static class PayloadPacketComparator implements Comparator<String> {
         /*
@@ -64,17 +88,9 @@ public class PayloadPacket extends Packet implements Comparable<PayloadPacket>{
          */
         @Override
         public int compare(String o1, String o2) {
-            if (o1.equals(o2)) return 0;
-            String[] o1Fields = o1.split(" ");
-            String[] o2Fields = o2.split(" ");
-            int seqNbOrder = Integer.compare(Integer.parseInt(o1Fields[3]), Integer.parseInt(o2Fields[3]));
+            int seqNbOrder = Integer.compare(Integer.parseInt(o1.split(" ")[3]), Integer.parseInt(o2.split(" ")[3]));
             if (seqNbOrder != 0) return seqNbOrder;
-            int receiverOrder = o1Fields[2].compareTo(o2Fields[2]);
-            if (receiverOrder != 0) return receiverOrder;
-            int originalSenderOrder = o1Fields[0].compareTo(o2Fields[0]);
-            if (originalSenderOrder != 0) return originalSenderOrder;
-            int senderOrder = o1Fields[1].compareTo(o2Fields[1]);
-            return senderOrder;
+            return o1.compareTo(o2);
         }
     }
 }

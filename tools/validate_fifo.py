@@ -89,6 +89,8 @@ if __name__ == "__main__":
     results = parser.parse_args()
     files = os.listdir(results.log_folder)
     output_files = sorted([f for f in files if f.endswith('.output')])
+    if len(output_files) != results.proc_num:
+        print("Missing output files")
     stdout_files = sorted([f for f in files if f.endswith('.stdout')])
     stderr_files = sorted([f for f in files if f.endswith('.stderr')])
 

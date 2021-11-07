@@ -5,7 +5,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Objects;
 
-public class Host implements Serializable {
+public class Host {
 
     private static final String IP_START_REGEX = "/";
 

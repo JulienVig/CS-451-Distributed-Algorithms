@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class BestEffortBroadcast extends Layer{
-    private Writer writer;
-    private PerfectLink pl;
-    private Consumer<PayloadPacket> upperLayerBroadcast;
-    private List<Host> hosts;
-    private Host myHost;
+    private final Writer writer;
+    private final PerfectLink pl;
+    private final Consumer<PayloadPacket> upperLayerBroadcast;
+    private final List<Host> hosts;
+    private final Host myHost;
 
     public BestEffortBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts,
                                Consumer<Packet> upperLayerDeliver, Consumer<PayloadPacket> upperLayerBroadcast) {
@@ -26,7 +26,7 @@ public class BestEffortBroadcast extends Layer{
         this.upperLayerDeliver = upperLayerDeliver;
         this.upperLayerBroadcast = upperLayerBroadcast;
         ArrayList<PayloadPacket> pktToBroadcast = createBroadcastPkt(nbMessageToSend, myHost, hosts);
-        pl = new PerfectLink(myHost.getPort(), this::deliver, pktToBroadcast);
+        pl = new PerfectLink(myHost.getPort(), hosts, this::deliver, pktToBroadcast);
     }
 
     public void broadcast(PayloadPacket pkt){
@@ -35,8 +35,8 @@ public class BestEffortBroadcast extends Layer{
             if (host != myHost) {
                 // Create new packet with same originalSender and seqNb
                 // but with current host as sender host
-                PayloadPacket newPkt = new PayloadPacket(pkt.getSeqNb(), pkt.getOriginalSenderHost(),
-                                                        myHost, host);
+                PayloadPacket newPkt = new PayloadPacket(pkt.getSeqNb(), pkt.getOriginalSenderId(),
+                                                        myHost.getId(), host.getId());
                 pl.sendPayload(newPkt);
             }
         }
@@ -48,7 +48,7 @@ public class BestEffortBroadcast extends Layer{
         for(Host host: hosts) {
             if (host != myHost) {
                 for (int i = 1; i <= nbMessageToSend ; i++) {
-                    PayloadPacket pkt = new PayloadPacket(i, myHost, host);
+                    PayloadPacket pkt = new PayloadPacket(i, myHost.getId(), host.getId());
                     broadcastPkt.add(pkt);
                     //Only log broadcast once per packet
                     if (!pktAlreadyLogged){

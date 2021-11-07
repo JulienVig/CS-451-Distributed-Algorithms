@@ -9,12 +9,12 @@ import java.util.Objects;
  * Serialization inspired from https://stackoverflow.com/questions/2836646/java-serializable-object-to-byte-array
  */
 public abstract class Packet implements Serializable {
-    private transient byte[] byteArray;
+    private transient byte[] byteArray = null;
     private String pktId;
-    private Host senderHost;
-    private Host receiverHost;
+    private int senderId;
+    private int receiverId;
 
-    byte[] serializeToBytes() {
+    public byte[] serializeToBytes() {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
              ObjectOutputStream out = new ObjectOutputStream(bos)) {
             out.writeObject(this);
@@ -25,6 +25,9 @@ public abstract class Packet implements Serializable {
             return null;
         }
     }
+
+    abstract void writeObject(ObjectOutputStream out) throws IOException ;
+    abstract void readObject(ObjectInputStream in) throws IOException ;
 
     public int length() {
         return byteArray.length;
@@ -39,23 +42,27 @@ public abstract class Packet implements Serializable {
     }
 
     public byte[] getBytes() {
+        if (byteArray == null || byteArray.length == 0) {
+            System.out.println("Computing bytes");
+            setByteArray(serializeToBytes());
+        } else  System.out.println("Already computed bytes");
         return byteArray;
     }
 
-    public Host getSenderHost() {
-        return senderHost;
+    public int getSenderId() {
+        return senderId;
     }
 
-    public Host getReceiverHost() {
-        return receiverHost;
+    public int getReceiverId() {
+        return receiverId;
     }
 
-    public void setSenderHost(Host senderHost) {
-        this.senderHost = senderHost;
+    public void setSenderId(int senderId) {
+        this.senderId = senderId;
     }
 
-    public void setReceiverHost(Host receiverHost) {
-        this.receiverHost = receiverHost;
+    public void setReceiverId(int receiverId) {
+        this.receiverId = receiverId;
     }
 
     public void setByteArray(byte[] byteArray) {

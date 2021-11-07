@@ -1,33 +1,31 @@
 package cs451.Layer;
 
+import cs451.Host;
 import cs451.Packet.AckPacket;
 import cs451.Packet.Packet;
 import cs451.Packet.PayloadPacket;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class PerfectLink extends Layer {
-    private ConcurrentSkipListSet<String> pktToBeAck =
-            new ConcurrentSkipListSet<>(new PayloadPacket.PayloadPacketComparator());
-    private ConcurrentHashMap<String, PayloadPacket> pktSent = new ConcurrentHashMap<>();
-    private HashSet<String> pktReceived = new HashSet<>();
-    private BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
-    private FairLossLink link;
+//    private final ConcurrentSkipListSet<String> pktToBeAck = new ConcurrentSkipListSet<>(); //ConcurrentHashSet
+    private final Set<String> pktToBeAck = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
+    private final ConcurrentHashMap<String, PayloadPacket> pktSent = new ConcurrentHashMap<>();
+    private final HashSet<String> pktReceived = new HashSet<>();
+    private final BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
 
-    public PerfectLink(int myPort, Consumer<Packet> upperLayerDeliver) {
+    public PerfectLink(int myPort, List<Host> hosts, Consumer<Packet> upperLayerDeliver) {
         this.upperLayerDeliver = upperLayerDeliver;
-        this.link = new FairLossLink(myPort, sendBuffer, this::deliver);
+        FairLossLink link = new FairLossLink(myPort, hosts, sendBuffer, this::deliver);
         new Thread(link).start();
         new Thread(this::startRetransmissions).start();
     }
 
-    public PerfectLink(int myPort, Consumer<Packet> upperLayerDeliver,
+    public PerfectLink(int myPort, List<Host> hosts, Consumer<Packet> upperLayerDeliver,
                        ArrayList<PayloadPacket> broadcastPkt) {
-        this(myPort, upperLayerDeliver);
+        this(myPort, hosts, upperLayerDeliver);
         for (PayloadPacket pkt : broadcastPkt) sendPayload(pkt);
     }
 
@@ -105,7 +103,6 @@ public class PerfectLink extends Layer {
             if (sendBuffer.size() > WINDOW_SIZE) return;
 
             int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
-
             Iterator<String> iter = pktToBeAck.iterator();
             PayloadPacket pkt;
             while (iter.hasNext() && counter < WINDOW_SIZE) {

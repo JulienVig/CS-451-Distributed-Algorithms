@@ -1,5 +1,10 @@
 package cs451.Packet;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 /**
  * An AckPacket only contains the PayloadPacket's id
  * to not congest the network while sending acks.
@@ -13,11 +18,11 @@ public class AckPacket extends Packet{
         this.payloadPktId = payloadPkt.getPktId();
         setPktId("ack " + payloadPktId);
         // Swap hosts for response
-        setReceiverHost(payloadPkt.getSenderHost());
-        setSenderHost(payloadPkt.getReceiverHost());
+        setReceiverId(payloadPkt.getSenderId());
+        setSenderId(payloadPkt.getReceiverId());
 
-        // /!\ Serialize at the last line of the constructor
-        setByteArray(serializeToBytes());
+//        // /!\ Serialize at the last line of the constructor
+//        setByteArray(serializeToBytes());
     }
 
     public String getPayloadPktId() {
@@ -29,4 +34,13 @@ public class AckPacket extends Packet{
         return "ack for " + payloadPktId;
     }
 
+    @Override
+    public void readObject(ObjectInputStream in) throws IOException{
+        payloadPktId = in.readUTF();
+    }
+
+    @Override
+    public void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeUTF(payloadPktId);
+    }
 }
