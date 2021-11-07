@@ -10,8 +10,8 @@ import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class PerfectLink extends Layer {
-//    private final ConcurrentSkipListSet<String> pktToBeAck = new ConcurrentSkipListSet<>(); //ConcurrentHashSet
-    private final Set<Long> pktToBeAck = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
+    private final ConcurrentSkipListSet<Long> pktToBeAck = new ConcurrentSkipListSet<>(); //ConcurrentHashSet
+//    private final Set<Long> pktToBeAck = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
     private final ConcurrentHashMap<Long, PayloadPacket> pktSent = new ConcurrentHashMap<>();
     private final HashSet<Long> pktReceived = new HashSet<>();
     private final BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
@@ -101,7 +101,7 @@ public class PerfectLink extends Layer {
         executorService.scheduleWithFixedDelay(() -> {
             if (pktToBeAck.isEmpty()) return;
             if (sendBuffer.size() > WINDOW_SIZE) return;
-
+            System.out.println(pktToBeAck);
             int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
             Iterator<Long> iter = pktToBeAck.iterator();
             PayloadPacket pkt;

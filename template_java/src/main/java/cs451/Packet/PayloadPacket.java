@@ -23,13 +23,11 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
     }
 
     private long createPktId(int seqNb, int originalSenderId, int senderId, int receiverId){
-        System.out.println(seqNb + " "+  originalSenderId + " "+ senderId+" "+ receiverId);
         String format = "%04d"; // 0 pad for a length of 4
         String pktIdStr = new StringBuilder().append(seqNb)
                                             .append(String.format(format, originalSenderId))
                                             .append(String.format(format, senderId))
                                             .append(String.format(format, receiverId)).toString();
-        System.out.println(Long.valueOf(pktIdStr));
         return Long.valueOf(pktIdStr);
     }
 
@@ -51,8 +49,8 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
 
     @Override
     public String toString() {
-//        return getPktId();
-        return originalSenderId + " " + getSenderId() + " " + getReceiverId() + " " + seqNb;
+        return String.valueOf(getPktId());
+//        return originalSenderId + " " + getSenderId() + " " + getReceiverId() + " " + seqNb;
     }
 
     @Override
@@ -62,7 +60,7 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
         setSenderId(in.readInt());
         setReceiverId(in.readInt());
         payload = String.valueOf(seqNb);
-        setPktId(createPktId(seqNb, originalSenderId, getSenderId(), getReceiverId()));
+//        setPktId(createPktId(seqNb, originalSenderId, getSenderId(), getReceiverId()));
     }
 
     @Override
