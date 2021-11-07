@@ -10,7 +10,7 @@ import java.util.Objects;
  */
 public abstract class Packet implements Serializable {
     private transient byte[] byteArray = null;
-    private String pktId;
+    private long pktId;
     private int senderId;
     private int receiverId;
 
@@ -33,19 +33,16 @@ public abstract class Packet implements Serializable {
         return byteArray.length;
     }
 
-    public String getPktId() {
+    public long getPktId() {
         return pktId;
     }
 
-    public void setPktId(String pktId) {
+    public void setPktId(long pktId) {
         this.pktId = pktId;
     }
 
     public byte[] getBytes() {
-        if (byteArray == null || byteArray.length == 0) {
-            System.out.println("Computing bytes");
-            setByteArray(serializeToBytes());
-        } else  System.out.println("Already computed bytes");
+        if (byteArray == null || byteArray.length == 0) setByteArray(serializeToBytes());
         return byteArray;
     }
 
@@ -92,6 +89,6 @@ public abstract class Packet implements Serializable {
 
     @Override
     public int hashCode() {
-        return getPktId().hashCode();
+        return Long.hashCode(getPktId());
     }
 }

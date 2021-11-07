@@ -12,20 +12,17 @@ import java.io.ObjectOutputStream;
  * since we have to find the original PayloadPacket from its id.
  */
 public class AckPacket extends Packet{
-    private String payloadPktId;
+    private long payloadPktId;
 
     public AckPacket(PayloadPacket payloadPkt){
         this.payloadPktId = payloadPkt.getPktId();
-        setPktId("ack " + payloadPktId);
+        setPktId(- payloadPktId);
         // Swap hosts for response
         setReceiverId(payloadPkt.getSenderId());
         setSenderId(payloadPkt.getReceiverId());
-
-//        // /!\ Serialize at the last line of the constructor
-//        setByteArray(serializeToBytes());
     }
 
-    public String getPayloadPktId() {
+    public long getPayloadPktId() {
         return payloadPktId;
     }
 
@@ -36,11 +33,11 @@ public class AckPacket extends Packet{
 
     @Override
     public void readObject(ObjectInputStream in) throws IOException{
-        payloadPktId = in.readUTF();
+        payloadPktId = in.readLong();
     }
 
     @Override
     public void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeUTF(payloadPktId);
+        out.writeLong(payloadPktId);
     }
 }

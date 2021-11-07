@@ -11,9 +11,9 @@ import java.util.function.Consumer;
 
 public class PerfectLink extends Layer {
 //    private final ConcurrentSkipListSet<String> pktToBeAck = new ConcurrentSkipListSet<>(); //ConcurrentHashSet
-    private final Set<String> pktToBeAck = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
-    private final ConcurrentHashMap<String, PayloadPacket> pktSent = new ConcurrentHashMap<>();
-    private final HashSet<String> pktReceived = new HashSet<>();
+    private final Set<Long> pktToBeAck = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
+    private final ConcurrentHashMap<Long, PayloadPacket> pktSent = new ConcurrentHashMap<>();
+    private final HashSet<Long> pktReceived = new HashSet<>();
     private final BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
 
     public PerfectLink(int myPort, List<Host> hosts, Consumer<Packet> upperLayerDeliver) {
@@ -59,7 +59,7 @@ public class PerfectLink extends Layer {
             System.err.println("Couldn't add packet to sendBuffer queue");
             e.printStackTrace();
         }
-        String pktId = pkt.getPktId();
+        long pktId = pkt.getPktId();
         pktToBeAck.add(pktId);
         pktSent.put(pktId, pkt);
     }
@@ -103,7 +103,7 @@ public class PerfectLink extends Layer {
             if (sendBuffer.size() > WINDOW_SIZE) return;
 
             int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
-            Iterator<String> iter = pktToBeAck.iterator();
+            Iterator<Long> iter = pktToBeAck.iterator();
             PayloadPacket pkt;
             while (iter.hasNext() && counter < WINDOW_SIZE) {
                 if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {

@@ -5,3 +5,4 @@ example/
 logs
 launch_script*
 log_folder/*
+config_intellij
