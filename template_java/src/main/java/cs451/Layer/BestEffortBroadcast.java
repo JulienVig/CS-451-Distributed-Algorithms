@@ -65,7 +65,7 @@ public class BestEffortBroadcast extends Layer{
 
     @Override
     public void deliver(Packet pkt) {
-        if (upperLayerDeliver != null) upperLayerDeliver.accept(pkt);
+        upperLayerDeliver.accept(pkt);
     }
 
     @Override
