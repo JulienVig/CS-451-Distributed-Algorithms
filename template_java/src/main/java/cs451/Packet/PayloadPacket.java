@@ -31,8 +31,14 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
         return Long.valueOf(pktIdStr);
     }
 
-    public String getSimpleId(){
-        return getOriginalSenderId() + " " + seqNb;
+//    public String getSimpleId(){
+//        return getOriginalSenderId() + " " + seqNb;
+//    }
+    public long getSimpleId(){
+        String format = "%04d";
+        String simplePktIdStr = new StringBuilder().append(seqNb)
+                .append(String.format(format, originalSenderId)).toString();
+        return Long.valueOf(simplePktIdStr);
     }
 
     public PayloadPacket(int seqNb, int senderId, int receiverId){

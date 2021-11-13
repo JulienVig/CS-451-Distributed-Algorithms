@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class UniformReliableBroadcast extends Layer{
-    // At this layer pkt are identified by the string "originalSender seqNumber"
+    // At this layer pkt are identified by the long composed of originalSender and seqNumber
     // (so forwarding packets doesn't change its id)
-    private HashSet<String> alreadyDelivered = new HashSet<>();
-    private HashSet<String> pending = new HashSet<>();
-    private HashMap<String, HashSet<Integer>> ack = new HashMap<>(); // Map<pkt id, host id>
+    private HashSet<Long> alreadyDelivered = new HashSet<>();
+    private HashSet<Long> pending = new HashSet<>();
+    private HashMap<Long, HashSet<Integer>> ack = new HashMap<>(); // Map<pkt id, host id>
     private BestEffortBroadcast beb;
     private double quorum;
 
@@ -49,7 +49,7 @@ public class UniformReliableBroadcast extends Layer{
 
     // Method called when broadcasting the hosts' initial packets
     private void broadcast(PayloadPacket pkt){
-        String simpleId = pkt.getSimpleId();
+        long simpleId = pkt.getSimpleId();
         pending.add(simpleId);
 //        ack.put(simpleId, new HashSet<>());
 //        ack.get(simpleId).add(pkt.getSenderId());
@@ -58,7 +58,7 @@ public class UniformReliableBroadcast extends Layer{
     private void processPkt(Packet pkt){
         // PerfectLink delivers only PayloadPacket
         PayloadPacket payloadPkt = (PayloadPacket) pkt;
-        String simpleId = payloadPkt.getSimpleId();
+        long simpleId = payloadPkt.getSimpleId();
         if(alreadyDelivered.contains(simpleId)) return;
 
         if (!ack.containsKey(simpleId)) {
@@ -75,7 +75,7 @@ public class UniformReliableBroadcast extends Layer{
     }
 
     private void tryDelivering(PayloadPacket pkt){
-        String simpleId = pkt.getSimpleId();
+        long simpleId = pkt.getSimpleId();
         if(pending.contains(simpleId) && ack.containsKey(simpleId)
                 && ack.get(simpleId).size() > quorum - 1){ // - 1 because we deduce ourselves
             alreadyDelivered.add(simpleId);

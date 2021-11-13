@@ -12,10 +12,10 @@ import java.util.function.Consumer;
 
 public class FIFOBroadcast extends Layer {
 
-    private final ConcurrentHashMap<Integer, Integer> next = new ConcurrentHashMap<>(); //Map<Host id, seq nb>
+    private final HashMap<Integer, Integer> next = new HashMap<>(); //Map<Host id, seq nb>
     // Use Map<simple Id, packet> because we don't want equality tested on
     // pktId but only on simpleId
-    private final ConcurrentHashMap<String, PayloadPacket> pending = new ConcurrentHashMap<>();
+    private final TreeMap<Long, PayloadPacket> pending = new TreeMap<>();
     private final Writer writer;
 
     public FIFOBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts,
@@ -54,20 +54,16 @@ public class FIFOBroadcast extends Layer {
 
     private void tryDelivering(){
         int hostId;
-        boolean deliveredPacket;
-        do {
-            deliveredPacket = false;
-            for (Map.Entry<String, PayloadPacket> entry : pending.entrySet()) {
-                PayloadPacket pkt = entry.getValue();
-                hostId = pkt.getOriginalSenderId();
-                if (pkt.getSeqNb() == next.get(hostId)) {
-//                    System.out.println("FIFO deliver " + pkt.getSimpleId());
-                    writer.write(pkt, Operation.DELIVER);
-                    next.put(hostId, next.get(hostId) + 1);
-                    pending.remove(entry.getKey());
-                    deliveredPacket = true;
-                }
+        Iterator<Map.Entry<Long,PayloadPacket>> iter = pending.entrySet().iterator();
+        while(iter.hasNext()){
+            PayloadPacket pkt = iter.next().getValue();
+            hostId = pkt.getOriginalSenderId();
+            if (pkt.getSeqNb() == next.get(hostId)) {
+//              System.out.println("FIFO deliver " + pkt.getSimpleId());
+                writer.write(pkt, Operation.DELIVER);
+                next.put(hostId, next.get(hostId) + 1);
+                iter.remove(); //pending.remove(entry.getKey());
             }
-        } while(deliveredPacket);
+        }
     }
 }
