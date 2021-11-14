@@ -12,17 +12,21 @@ import java.util.function.Consumer;
 
 public class FIFOBroadcast extends Layer {
 
-    private final HashMap<Integer, Integer> next = new HashMap<>(); //Map<Host id, seq nb>
+    private final int[] next; //Map<Host id, seq nb>
     // Use Map<simple Id, packet> because we don't want equality tested on
     // pktId but only on simpleId
-    private final TreeMap<Long, PayloadPacket> pending = new TreeMap<>();
+    //One priority queue per host, where PriorityQueues' comparator uses pktSimpleId
+    private final PriorityQueue<PayloadPacket>[] pending;
     private final Writer writer;
 
     public FIFOBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts,
                          Consumer<Packet> upperLayerDeliver) {
         this.upperLayerDeliver = upperLayerDeliver;
         this.writer = writer;
-        for (Host host : hosts) next.put(host.getId(), 1);
+        next = new int[hosts.size()];
+        pending = new PriorityQueue[hosts.size()];
+        for (int i = 0; i < pending.length; i++) pending[i] = new PriorityQueue<>(Comparator.comparing(PayloadPacket::getSimpleId));
+        for (Host host : hosts) next[host.getId() - 1] = 1;
         UniformReliableBroadcast urb = new UniformReliableBroadcast(nbMessageToSend, writer, myHost, hosts, this::deliver);
         new Thread(urb).start();
 
@@ -48,24 +52,18 @@ public class FIFOBroadcast extends Layer {
 
     private void processPkt(Packet pkt){
         PayloadPacket payloadPacket = (PayloadPacket)  pkt;
-        pending.put(payloadPacket.getSimpleId(), payloadPacket);
-        tryDelivering();
+        int hostIdx = payloadPacket.getOriginalSenderId() - 1;
+        pending[hostIdx].add(payloadPacket);
+        if(pending[hostIdx].peek().getSeqNb() == next[hostIdx]) tryDelivering(hostIdx);
     }
 
-    private void tryDelivering(){
-        int hostId;
-        Iterator<Map.Entry<Long,PayloadPacket>> iter = pending.entrySet().iterator();
-        //Packets are checked in ascending order of sequence number
-        while(iter.hasNext()){
-            PayloadPacket pkt = iter.next().getValue();
-            hostId = pkt.getOriginalSenderId();
-            int nextSeq = next.get(hostId);
-            if (pkt.getSeqNb() == nextSeq) {
+    private void tryDelivering(int hostIdx){
+        //The first packet is always the smallest seq number
+        do {
+//            PayloadPacket pkt = pending[hostIdx].poll();
 //                System.out.println(Thread.currentThread().getId() + " FIFO deliver " + pkt.getSimpleId());
-                writer.write(pkt, Operation.DELIVER);
-                next.put(hostId, nextSeq + 1);
-                iter.remove(); //pending.remove(entry.getKey());
-            }
-        }
+            writer.write(pending[hostIdx].poll(), Operation.DELIVER);
+            next[hostIdx]++;
+        } while(pending[hostIdx].size() > 0 && pending[hostIdx].peek().getSeqNb() == next[hostIdx]);
     }
 }
