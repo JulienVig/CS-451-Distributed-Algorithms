@@ -14,7 +14,7 @@ public class PerfectLink extends Layer {
     private final Set<Long> pktToBeAck = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
     private final ConcurrentHashMap<Long, PayloadPacket> pktSent = new ConcurrentHashMap<>();
     private final HashSet<Long> pktReceived = new HashSet<>();
-    private final BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
+    private final LinkedBlockingDeque<Packet> sendBuffer = new LinkedBlockingDeque<>();
 
     public PerfectLink(int myPort, List<Host> hosts, Consumer<Packet> upperLayerDeliver) {
         this.upperLayerDeliver = upperLayerDeliver;
@@ -53,12 +53,7 @@ public class PerfectLink extends Layer {
     }
 
     public void sendPayload(PayloadPacket pkt) {
-        try {
-            sendBuffer.put(pkt);
-        } catch (InterruptedException e) {
-            System.err.println("Couldn't add packet to sendBuffer queue");
-            e.printStackTrace();
-        }
+        sendBuffer.addLast(pkt);
         long pktId = pkt.getPktId();
         pktToBeAck.add(pktId);
         pktSent.put(pktId, pkt);
@@ -86,12 +81,7 @@ public class PerfectLink extends Layer {
 
     private void sendAck(PayloadPacket pkt){
         AckPacket ackPkt = new AckPacket(pkt);
-        try {
-            sendBuffer.put(ackPkt);
-        } catch(InterruptedException e){
-            System.err.println("Couldn't add packet to sendBuffer queue");
-            e.printStackTrace();
-        }
+        sendBuffer.addFirst(ackPkt);
     }
 
     private void startRetransmissions(){
