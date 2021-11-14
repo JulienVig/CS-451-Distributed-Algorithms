@@ -13,6 +13,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -83,17 +84,17 @@ public class FairLossLink extends Layer{
     }
 
     private Packet deserializePkt(byte[] bytes){
-        Packet pkt = null;
-        try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-             ObjectInputStream in = new ObjectInputStream(bis)) {
-            pkt = (Packet) in.readObject();
-//            if (in.readObject() == PacketType.PAYLOAD) pkt = PayloadPacket.deserializePkt(in);
-//            else pkt = AckPacket.deserializePkt(in);
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Could not deserialize packet");
-            e.printStackTrace();
-        }
-        return pkt;
+        return bytes[0] == (byte) 1 ? PayloadPacket.deserializeToObject(bytes) : AckPacket.deserializeToObject(bytes);
+//        try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+//             ObjectInputStream in = new ObjectInputStream(bis)) {
+//            pkt = (Packet) in.readObject();
+////            if (in.readObject() == PacketType.PAYLOAD) pkt = PayloadPacket.deserializePkt(in);
+////            else pkt = AckPacket.deserializePkt(in);
+//        } catch (IOException | ClassNotFoundException e) {
+//            System.err.println("Could not deserialize packet");
+//            e.printStackTrace();
+//        }
+//        return pkt;
     }
 
 }

@@ -8,26 +8,28 @@ import java.util.Objects;
 /**
  * Serialization inspired from https://stackoverflow.com/questions/2836646/java-serializable-object-to-byte-array
  */
-public abstract class Packet implements Serializable {
+public abstract class Packet{// implements Serializable {
     private transient byte[] byteArray = null;
     private long pktId;
     private int senderId;
     private int receiverId;
 
-    public byte[] serializeToBytes() {
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-             ObjectOutputStream out = new ObjectOutputStream(bos)) {
-            out.writeObject(this);
-            return bos.toByteArray();
-        } catch (IOException e) {
-            System.err.println("Could not serialize packet" + this);
-            e.printStackTrace();
-            return null;
-        }
-    }
+    abstract public byte[] serializeToBytes();
+//    {
+//        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//             ObjectOutputStream out = new ObjectOutputStream(bos)) {
+//            out.writeObject(this);
+//            return bos.toByteArray();
+//        } catch (IOException e) {
+//            System.err.println("Could not serialize packet" + this);
+//            e.printStackTrace();
+//            return null;
+//        }
+//    }
+//    abstract public static Packet deserializeToObject(byte[] bytes);
 
-    abstract void writeObject(ObjectOutputStream out) throws IOException ;
-    abstract void readObject(ObjectInputStream in) throws IOException ;
+//    abstract void writeObject(ObjectOutputStream out) throws IOException ;
+//    abstract void readObject(ObjectInputStream in) throws IOException ;
 
     public int length() {
         return byteArray.length;

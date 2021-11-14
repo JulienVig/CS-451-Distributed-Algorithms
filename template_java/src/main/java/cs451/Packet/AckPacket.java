@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
 
 /**
  * An AckPacket only contains the PayloadPacket's id
@@ -22,6 +23,10 @@ public class AckPacket extends Packet{
         setSenderId(payloadPkt.getReceiverId());
     }
 
+    public AckPacket(long payloadPktId){
+        this.payloadPktId = payloadPktId;
+    }
+
     public long getPayloadPktId() {
         return payloadPktId;
     }
@@ -32,12 +37,26 @@ public class AckPacket extends Packet{
     }
 
     @Override
-    public void readObject(ObjectInputStream in) throws IOException{
-        payloadPktId = in.readLong();
+    public byte[] serializeToBytes() {
+        byte[] bytes = new byte[9];
+        ByteBuffer bb = ByteBuffer.wrap(bytes);
+        bb.put((byte) 0); // 0 for PayloadPacket
+        bb.putLong(payloadPktId);
+        return bb.array();
     }
 
-    @Override
-    public void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeLong(payloadPktId);
+    public static Packet deserializeToObject(byte[] bytes){
+        ByteBuffer bb = ByteBuffer.wrap(bytes, 1, 8);//Offset of 1 since the first byte is the Packet type
+        return new AckPacket(bb.getLong());
     }
+
+//    @Override
+//    public void readObject(ObjectInputStream in) throws IOException{
+//        payloadPktId = in.readLong();
+//    }
+//
+//    @Override
+//    public void writeObject(ObjectOutputStream out) throws IOException {
+//        out.writeLong(payloadPktId);
+//    }
 }
