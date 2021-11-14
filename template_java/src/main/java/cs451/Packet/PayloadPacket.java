@@ -14,9 +14,11 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
     private int originalSenderId;
     private long simpleId;
 
+    private static final long idBase1 = (long) Math.pow(10, 12);
+    private static final long idBase2 = 100000000;
+    private static final long idBase3 = 10000;
+
     public PayloadPacket(int seqNb, int originalSenderId, int senderId, int receiverId) {
-//        setPktId(createPktId(seqNb, originalSenderHost, senderHost, receiverHost));
-//        System.out.print(getPktId() + " - ");
         setPktId(createPktId(seqNb, originalSenderId, senderId, receiverId));
         this.seqNb = seqNb;
         setSenderId(senderId);
@@ -30,12 +32,14 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
     }
 
     private long createPktId(int seqNb, int originalSenderId, int senderId, int receiverId){
-        String format = "%04d"; // 0 pad for a length of 4
-        String pktIdStr = new StringBuilder().append(seqNb)
-                                            .append(String.format(format, originalSenderId))
-                                            .append(String.format(format, senderId))
-                                            .append(String.format(format, receiverId)).toString();
-        return Long.valueOf(pktIdStr);
+//        String format = "%04d"; // 0 pad for a length of 4
+//        String pktIdStr = new StringBuilder().append(seqNb)
+//                                            .append(String.format(format, originalSenderId))
+//                                            .append(String.format(format, senderId))
+//                                            .append(String.format(format, receiverId)).toString();
+//        return Long.valueOf(pktIdStr);
+
+        return seqNb * idBase1 + originalSenderId * idBase2 + senderId * idBase3 + receiverId;
     }
 
 //    public String getSimpleId(){
