@@ -12,6 +12,7 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
     private int seqNb;
     private int payload; // The payload is not used
     private int originalSenderId;
+    private long simpleId;
 
     public PayloadPacket(int seqNb, int originalSenderId, int senderId, int receiverId) {
 //        setPktId(createPktId(seqNb, originalSenderHost, senderHost, receiverHost));
@@ -41,10 +42,14 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
 //        return getOriginalSenderId() + " " + seqNb;
 //    }
     public long getSimpleId(){
-        String format = "%04d";
-        String simplePktIdStr = new StringBuilder().append(seqNb)
-                .append(String.format(format, originalSenderId)).toString();
-        return Long.valueOf(simplePktIdStr);
+        if (simpleId == 0) {
+            String format = "%04d";
+            String simplePktIdStr = new StringBuilder().append(seqNb)
+                    .append(String.format(format, originalSenderId)).toString();
+            simpleId = Long.valueOf(simplePktIdStr);
+        }
+        return simpleId;
+//        return Long.valueOf(simplePktIdStr);
     }
 
     public PayloadPacket(int seqNb, int senderId, int receiverId){
@@ -67,15 +72,12 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
 
     @Override
     public byte[] serializeToBytes(){
-        byte[] bytes = new byte[21];
-        ByteBuffer bb = ByteBuffer.wrap(bytes);
+        ByteBuffer bb = ByteBuffer.allocate(21);
         bb.put((byte) 1); // 1 for PayloadPacket
         bb.putInt(seqNb);
         bb.putInt(originalSenderId);
         bb.putInt(getSenderId());
         bb.putInt(getReceiverId());
-//        System.out.println(bb.array());
-//        System.out.println(seqNb + " " +originalSenderId+ " " + getSenderId()+ " " + getReceiverId());
         return bb.array();
     }
 
@@ -87,24 +89,5 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
         int receiverId = bb.getInt();
         return new PayloadPacket(seqNb, originalSenderId, senderId, receiverId, bytes);
     }
-
-
-//    @Override
-//    public void readObject(ObjectInputStream in) throws IOException{
-//        seqNb = in.readInt();
-//        originalSenderId = in.readInt();
-//        setSenderId(in.readInt());
-//        setReceiverId(in.readInt());
-//        payload = String.valueOf(seqNb);
-////        setPktId(createPktId(seqNb, originalSenderId, getSenderId(), getReceiverId()));
-//    }
-//
-//    @Override
-//    public void writeObject(ObjectOutputStream out) throws IOException {
-//        out.writeInt(getSeqNb());
-//        out.writeInt(getOriginalSenderId());
-//        out.writeInt(getSenderId());
-//        out.writeInt(getReceiverId());
-//    }
 }
 

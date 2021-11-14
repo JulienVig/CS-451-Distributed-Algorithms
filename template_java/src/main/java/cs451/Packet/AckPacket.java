@@ -38,8 +38,7 @@ public class AckPacket extends Packet{
 
     @Override
     public byte[] serializeToBytes() {
-        byte[] bytes = new byte[9];
-        ByteBuffer bb = ByteBuffer.wrap(bytes);
+        ByteBuffer bb = ByteBuffer.allocate(9);
         bb.put((byte) 0); // 0 for PayloadPacket
         bb.putLong(payloadPktId);
         return bb.array();
@@ -49,14 +48,4 @@ public class AckPacket extends Packet{
         ByteBuffer bb = ByteBuffer.wrap(bytes, 1, 8);//Offset of 1 since the first byte is the Packet type
         return new AckPacket(bb.getLong());
     }
-
-//    @Override
-//    public void readObject(ObjectInputStream in) throws IOException{
-//        payloadPktId = in.readLong();
-//    }
-//
-//    @Override
-//    public void writeObject(ObjectOutputStream out) throws IOException {
-//        out.writeLong(payloadPktId);
-//    }
 }
