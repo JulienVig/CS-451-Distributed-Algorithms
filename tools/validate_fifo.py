@@ -29,7 +29,10 @@ def checkProcess(filePath):
             tokens = line.split()
 
             # Check broadcast
-            if tokens[0] == 'b':
+            if len(tokens) == 0:
+                print(f"File {filename}, Line {lineNumber}: empty line")
+                return False
+            elif tokens[0] == 'b':
                 msg = int(tokens[1])
                 if msg != i:
                     print("File {}, Line {}: Messages broadcast out of order. Expected message {} but broadcast message {}".format(filename, lineNumber, i, msg))
@@ -37,7 +40,7 @@ def checkProcess(filePath):
                 i += 1
 
             # Check delivery
-            if tokens[0] == 'd':
+            elif tokens[0] == 'd':
                 sender = int(tokens[1])
                 msg = int(tokens[2])
                 if msg != nextMessage[sender]:

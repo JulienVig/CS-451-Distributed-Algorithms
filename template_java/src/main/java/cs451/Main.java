@@ -32,12 +32,7 @@ public class Main {
         parser.parse();
         Writer writer = new Writer(parser::writeToFile);
         initSignalHandlers(writer);
-//        new Thread(writer).start();
-
-//        long pid = ProcessHandle.current().pid();
-//        System.out.println("My PID: " + pid + "\n");
-//        System.out.println("From a new terminal type `kill -SIGINT " + pid + "` or `kill -SIGTERM " + pid + "` to stop processing packets\n");
-//        System.out.println("My ID: " + parser.myId() + "\n");
+        new Thread(writer).start();
 
         int myId = parser.myId();
         Host myHost = null;
