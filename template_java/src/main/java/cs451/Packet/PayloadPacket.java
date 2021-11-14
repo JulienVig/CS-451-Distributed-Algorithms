@@ -47,10 +47,11 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
 //    }
     public long getSimpleId(){
         if (simpleId == 0) {
-            String format = "%04d";
-            String simplePktIdStr = new StringBuilder().append(seqNb)
-                    .append(String.format(format, originalSenderId)).toString();
-            simpleId = Long.valueOf(simplePktIdStr);
+//            String format = "%04d";
+//            String simplePktIdStr = new StringBuilder().append(seqNb)
+//                    .append(String.format(format, originalSenderId)).toString();
+//            simpleId = Long.valueOf(simplePktIdStr);
+            simpleId = seqNb * idBase3 + originalSenderId;
         }
         return simpleId;
 //        return Long.valueOf(simplePktIdStr);
