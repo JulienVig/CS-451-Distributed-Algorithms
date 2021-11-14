@@ -23,9 +23,11 @@ public class FairLossLink extends Layer{
     private DatagramSocket ds;
     private BlockingQueue<Packet> sendBuffer;
     private HashMap<Integer, Host> hostIdMapping = new HashMap<>();
+    private Consumer<Integer> pollRetransmissions;
+    private final int WINDOW_SIZE = 50;
 
     public FairLossLink(int myPort, List<Host> hosts, BlockingQueue<Packet> sendBuffer,
-                        Consumer<Packet> upperLayerDeliver) {
+                        Consumer<Packet> upperLayerDeliver, Consumer<Integer> pollRetransmissions) {
         try {
             this.ds = new DatagramSocket(myPort);
         } catch (SocketException e) {
@@ -33,6 +35,7 @@ public class FairLossLink extends Layer{
             e.printStackTrace();
             Thread.currentThread().interrupt();
         }
+        this.pollRetransmissions = pollRetransmissions;
         for (Host host : hosts) hostIdMapping.put(host.getId(), host);
         this.sendBuffer = sendBuffer;
         this.upperLayerDeliver = upperLayerDeliver;
@@ -64,6 +67,7 @@ public class FairLossLink extends Layer{
         while (true) {
             try {
                 sendPacket(sendBuffer.take());
+                if (sendBuffer.size() < WINDOW_SIZE) pollRetransmissions.accept(WINDOW_SIZE);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Thread.currentThread().interrupt();
@@ -77,6 +81,7 @@ public class FairLossLink extends Layer{
             DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(), ip,
                                                     hostIdMapping.get(pkt.getReceiverId()).getPort());
             ds.send(dp);
+
         } catch (Exception e) {
             System.err.println("Exception while sending " + pkt + " through " + this);
             e.printStackTrace();
