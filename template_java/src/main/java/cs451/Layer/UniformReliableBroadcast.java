@@ -78,6 +78,7 @@ public class UniformReliableBroadcast extends Layer{
         long simpleId = pkt.getSimpleId();
         if(pending.contains(simpleId) && ack.containsKey(simpleId)
                 && ack.get(simpleId).size() > quorum - 1){ // - 1 because we deduce ourselves
+//            System.out.println(Thread.currentThread().getId() + " URB deliver " + pkt.getSimpleId());
             alreadyDelivered.add(simpleId);
             ack.remove((simpleId));
             pending.remove(simpleId);

@@ -69,14 +69,15 @@ public class Parser {
         return outputParser.getPath();
     }
 
-    public boolean writeBroadcast(int seqNb){
-        return outputParser.writeBroadcast(seqNb);
-    }
+//    public boolean writeBroadcast(int seqNb){
+//        return outputParser.writeBroadcast(seqNb);
+//    }
+//
+//    public boolean writeDeliver(String msg){
+//        return outputParser.writeDeliver(msg);
+//    }
 
-    public boolean writeDeliver(String msg){
-        return outputParser.writeDeliver(msg);
-    }
-
+    public boolean writeToFile(String msg){return outputParser.writeToFile(msg);}
     public String config() {
         return configParser.getPath();
     }

@@ -30,15 +30,16 @@ public class OutputParser {
         return path;
     }
 
-    public boolean writeBroadcast(int seqNb){
-        return writeToFile("b " + seqNb);
-    }
+//    public boolean writeBroadcast(int seqNb){
+//        return writeToFile("b " + seqNb);
+//    }
+//
+//    public boolean writeDeliver(String msg){
+//        return writeToFile("d " + msg);
+//    }
 
-    public boolean writeDeliver(String msg){
-        return writeToFile("d " + msg);
-    }
 
-    private boolean writeToFile(String msg){
+    public boolean writeToFile(String msg){
         try(FileWriter fw = new FileWriter(path, true);
             BufferedWriter bw = new BufferedWriter(fw);
             PrintWriter out = new PrintWriter(bw))

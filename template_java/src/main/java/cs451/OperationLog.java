@@ -23,4 +23,9 @@ public class OperationLog {
     public int getIntContent(){
         return Integer.valueOf(content);
     }
+
+//    @Override
+//    public String toString(){
+//        return (type == Operation.BROADCAST ? "b " : "d ") + content;
+//    }
 }

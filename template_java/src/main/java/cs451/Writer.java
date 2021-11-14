@@ -10,51 +10,49 @@ import static cs451.Operation.BROADCAST;
 import static cs451.Operation.DELIVER;
 
 
-public class Writer implements Runnable{
-    private BlockingQueue<OperationLog> buffer = new LinkedBlockingQueue<>();
-    private Consumer<Integer> writeBroadcast;
-    private Consumer<String> writeDeliver;
+public class Writer{
+//    private BlockingQueue<OperationLog> buffer = new LinkedBlockingQueue<>();
+    private Consumer<String> writeToOutput;
+    private StringBuilder builder = new StringBuilder(10000);
 
-    public Writer(Consumer<Integer> writeBroadcast, Consumer<String> writeDeliver) {
-        this.writeBroadcast = writeBroadcast;
-        this.writeDeliver = writeDeliver;
+    public Writer(Consumer<String> writeToOutput) {
+        this.writeToOutput = writeToOutput;
     }
 
     public void write(PayloadPacket pkt, Operation op){
         try {
-            OperationLog log = null;
-            if (op == BROADCAST) log = new OperationLog(BROADCAST, pkt.getSeqNb());
-            else if (op == DELIVER)  log = new OperationLog(DELIVER, pkt.getOriginalSenderId() + " " + pkt.getSeqNb());
+            if (builder.length() != 0) builder.append(System.getProperty("line.separator"));
+            if (op == BROADCAST) builder.append("b "+ pkt.getSeqNb());
+            else if (op == DELIVER)  builder.append("d "+ pkt.getOriginalSenderId() + " " + pkt.getSeqNb());
             else System.err.println("Unrecognized write Operation type: " + op);
-            
-            if (log != null) buffer.add(log);
+
         } catch(Exception e){
             System.err.println("Couldn't add packet log to write buffer");
             e.printStackTrace();
         }
     }
 
-    @Override
-    public void run() {
-        while (true) emptyBuffer();
-    }
+//    @Override
+//    public void run() {
+//        while (true) emptyBuffer();
+//    }
 
     public void flush(){
-        buffer.forEach(this::writeLog);
+        writeToOutput.accept(builder.toString());
     }
 
-    private void emptyBuffer(){
-            try {
-                writeLog(buffer.take());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
-            }
-    }
-
-    private void writeLog(OperationLog log){
-        if (log.getType() == BROADCAST) writeBroadcast.accept(log.getIntContent());
-        else if (log.getType() == DELIVER) writeDeliver.accept(log.getContent());
-        else System.err.println("Unrecognized OperationLog type: " + log.getType());
-    }
+//    private void emptyBuffer(){
+//            try {
+//                writeLog(buffer.take());
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//                Thread.currentThread().interrupt();
+//            }
+//    }
+//
+//    private void writeLog(OperationLog log){
+//        if (log.getType() == BROADCAST) writeBroadcast.accept(log.getIntContent());
+//        else if (log.getType() == DELIVER) writeDeliver.accept(log.getContent());
+//        else System.err.println("Unrecognized OperationLog type: " + log.getType());
+//    }
 }

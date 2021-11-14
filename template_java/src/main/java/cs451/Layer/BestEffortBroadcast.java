@@ -65,6 +65,8 @@ public class BestEffortBroadcast extends Layer{
 
     @Override
     public void deliver(Packet pkt) {
+
+//        System.out.println(Thread.currentThread().getId() + " BEB deliver " + ((PayloadPacket) pkt).getSimpleId());
         upperLayerDeliver.accept(pkt);
     }
 

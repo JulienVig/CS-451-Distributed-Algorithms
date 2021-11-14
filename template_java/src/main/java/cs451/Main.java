@@ -30,9 +30,9 @@ public class Main {
         System.out.println("start " + ZonedDateTime.now().toInstant().toEpochMilli());
         Parser parser = new Parser(args);
         parser.parse();
-        Writer writer = new Writer(parser::writeBroadcast, parser::writeDeliver);
+        Writer writer = new Writer(parser::writeToFile);
         initSignalHandlers(writer);
-        new Thread(writer).start();
+//        new Thread(writer).start();
 
 //        long pid = ProcessHandle.current().pid();
 //        System.out.println("My PID: " + pid + "\n");

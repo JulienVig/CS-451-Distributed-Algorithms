@@ -55,13 +55,15 @@ public class FIFOBroadcast extends Layer {
     private void tryDelivering(){
         int hostId;
         Iterator<Map.Entry<Long,PayloadPacket>> iter = pending.entrySet().iterator();
+        //Packets are checked in ascending order of sequence number
         while(iter.hasNext()){
             PayloadPacket pkt = iter.next().getValue();
             hostId = pkt.getOriginalSenderId();
-            if (pkt.getSeqNb() == next.get(hostId)) {
-//              System.out.println("FIFO deliver " + pkt.getSimpleId());
+            int nextSeq = next.get(hostId);
+            if (pkt.getSeqNb() == nextSeq) {
+//                System.out.println(Thread.currentThread().getId() + " FIFO deliver " + pkt.getSimpleId());
                 writer.write(pkt, Operation.DELIVER);
-                next.put(hostId, next.get(hostId) + 1);
+                next.put(hostId, nextSeq + 1);
                 iter.remove(); //pending.remove(entry.getKey());
             }
         }
