@@ -1,12 +1,6 @@
 package cs451.Packet;
 
-
-import cs451.Host;
-
-import java.io.*;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
 
 public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPacket>{
     private int seqNb;
@@ -32,29 +26,11 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
     }
 
     private long createPktId(int seqNb, int originalSenderId, int senderId, int receiverId){
-//        String format = "%04d"; // 0 pad for a length of 4
-//        String pktIdStr = new StringBuilder().append(seqNb)
-//                                            .append(String.format(format, originalSenderId))
-//                                            .append(String.format(format, senderId))
-//                                            .append(String.format(format, receiverId)).toString();
-//        return Long.valueOf(pktIdStr);
-
         return seqNb * idBase1 + originalSenderId * idBase2 + senderId * idBase3 + receiverId;
     }
-
-//    public String getSimpleId(){
-//        return getOriginalSenderId() + " " + seqNb;
-//    }
     public long getSimpleId(){
-        if (simpleId == 0) {
-//            String format = "%04d";
-//            String simplePktIdStr = new StringBuilder().append(seqNb)
-//                    .append(String.format(format, originalSenderId)).toString();
-//            simpleId = Long.valueOf(simplePktIdStr);
-            simpleId = seqNb * idBase3 + originalSenderId;
-        }
+        if (simpleId == 0) simpleId = seqNb * idBase3 + originalSenderId;
         return simpleId;
-//        return Long.valueOf(simplePktIdStr);
     }
 
     public PayloadPacket(int seqNb, int senderId, int receiverId){
