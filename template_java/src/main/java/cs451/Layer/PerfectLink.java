@@ -10,12 +10,12 @@ import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class PerfectLink extends Layer {
-//    private final ConcurrentSkipListSet<Long> pktToBeAck = new ConcurrentSkipListSet<>(); //ConcurrentHashSet
+    private final ConcurrentSkipListSet<Long> pktToBeAck = new ConcurrentSkipListSet<>(); //ConcurrentHashSet
 //    private final Set<PayloadPacket> pktToBeAck = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
-//    private final Set<PayloadPacket> pktSent = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
+    private final ConcurrentHashMap<Long, PayloadPacket> pktSent = new ConcurrentHashMap<>(); //ConcurrentHashSet
 
     //Needs to be a map and not a set to be able to remove packets given the pktId in an AckPacket
-    private final ConcurrentHashMap<Long, PayloadPacket> pktToBeAck = new ConcurrentHashMap<>();
+//    private final ConcurrentHashMap<Long, PayloadPacket> pktToBeAck = new ConcurrentHashMap<>();
     private final HashSet<Long> pktReceived = new HashSet<>();
     private final BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
 
@@ -23,7 +23,6 @@ public class PerfectLink extends Layer {
         this.upperLayerDeliver = upperLayerDeliver;
         FairLossLink link = new FairLossLink(myPort, hosts, sendBuffer, this::deliver, this::pollRetransmissions);
         new Thread(link).start();
-//        new Thread(this::startRetransmissions).start();
     }
 
     public PerfectLink(int myPort, List<Host> hosts, Consumer<Packet> upperLayerDeliver,
@@ -63,7 +62,8 @@ public class PerfectLink extends Layer {
             e.printStackTrace();
         }
         long pktId = pkt.getPktId();
-        pktToBeAck.put(pktId, pkt);
+        pktToBeAck.add(pktId);
+        pktSent.put(pktId, pkt);
     }
 
     @Override
@@ -83,6 +83,7 @@ public class PerfectLink extends Layer {
         } else {
             AckPacket ackPacket = (AckPacket) pkt;
             pktToBeAck.remove(ackPacket.getPayloadPktId());
+            pktSent.remove(ackPacket.getPayloadPktId());
         }
     }
 
@@ -101,10 +102,13 @@ public class PerfectLink extends Layer {
             if (pktToBeAck.isEmpty()) return;
 
             int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
-            Iterator<Map.Entry<Long, PayloadPacket>> iter = pktToBeAck.entrySet().iterator();
+            Iterator<Long> iter = pktToBeAck.iterator();
+            PayloadPacket pkt;
             while (iter.hasNext() && counter < windowSize) {
-                sendPayload(iter.next().getValue());
-                counter++;
+                if((pkt = pktSent.getOrDefault(iter.next(), null)) != null){
+                    sendPayload(pkt);
+                    counter++;
+                }
             }
         } catch (Throwable e){
             e.printStackTrace();
