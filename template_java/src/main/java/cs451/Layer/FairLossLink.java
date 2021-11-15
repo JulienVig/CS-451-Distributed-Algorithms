@@ -83,7 +83,7 @@ public class FairLossLink extends Layer{
             DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(),
                     receiver.getInetAddress(), receiver.getPort());
             ds.send(dp);
-            System.out.println("FL deliver");
+//            System.out.println("FL deliver");
         } catch (Exception e) {
             System.err.println("Exception while sending " + pkt + " through " + this);
             e.printStackTrace();
