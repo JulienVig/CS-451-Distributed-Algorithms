@@ -17,7 +17,7 @@ public class PerfectLink extends Layer {
     //Needs to be a map and not a set to be able to remove packets given the pktId in an AckPacket
 //    private final ConcurrentHashMap<Long, PayloadPacket> pktToBeAck = new ConcurrentHashMap<>();
     private final HashSet<Long> pktReceived = new HashSet<>();
-    private final BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
+    private final ConcurrentLinkedDeque<Packet> sendBuffer = new ConcurrentLinkedDeque<>();
 
     public PerfectLink(int myPort, List<Host> hosts, Consumer<Packet> upperLayerDeliver) {
         this.upperLayerDeliver = upperLayerDeliver;
@@ -56,12 +56,6 @@ public class PerfectLink extends Layer {
     }
 
     public void sendPayload(PayloadPacket pkt) {
-//        try {
-//            sendBuffer.put(pkt);
-//        } catch (InterruptedException e) {
-//            System.err.println("Couldn't add packet to sendBuffer queue");
-//            e.printStackTrace();
-//        }
         long pktId = pkt.getPktId();
         pktToBeAck.add(pktId);
         pktSent.put(pktId, pkt);
@@ -84,19 +78,15 @@ public class PerfectLink extends Layer {
             }
         } else {
             AckPacket ackPacket = (AckPacket) pkt;
-            pktToBeAck.remove(ackPacket.getPayloadPktId());
-            pktSent.remove(ackPacket.getPayloadPktId());
+            long pktId = ackPacket.getPayloadPktId();
+            pktToBeAck.remove(pktId);
+            pktSent.remove(pktId);
         }
     }
 
     private void sendAck(PayloadPacket pkt){
         AckPacket ackPkt = new AckPacket(pkt);
-        try {
-            sendBuffer.put(ackPkt);
-        } catch(InterruptedException e){
-            System.err.println("Couldn't add packet to sendBuffer queue");
-            e.printStackTrace();
-        }
+        sendBuffer.addFirst(ackPkt);
     }
 
     private void startRetransmissions() {
@@ -112,7 +102,7 @@ public class PerfectLink extends Layer {
                 PayloadPacket pkt;
                 while (iter.hasNext() && counter < WINDOW_SIZE) {
                     if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
-                        sendBuffer.offer(pkt);
+                        sendBuffer.addLast(pkt);
                         counter++;
                     }
                 }

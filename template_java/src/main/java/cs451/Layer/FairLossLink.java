@@ -17,14 +17,15 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Consumer;
 
 public class FairLossLink extends Layer{
     private DatagramSocket ds;
-    private BlockingQueue<Packet> sendBuffer;
+    private ConcurrentLinkedDeque<Packet> sendBuffer;
     private Host[] hostIdMapping;
 
-    public FairLossLink(int myPort, List<Host> hosts, BlockingQueue<Packet> sendBuffer,
+    public FairLossLink(int myPort, List<Host> hosts, ConcurrentLinkedDeque<Packet> sendBuffer,
                         Consumer<Packet> upperLayerDeliver) {
         try {
             this.ds = new DatagramSocket(myPort);
@@ -65,13 +66,13 @@ public class FairLossLink extends Layer{
 
     private void flushSendBuffer() {
         while (true) {
-            try {
-                sendPacket(sendBuffer.take());
+//            try {
+                sendPacket(sendBuffer.pollFirst());
 //                if (sendBuffer.size() < WINDOW_SIZE) pollRetransmissions.accept(WINDOW_SIZE);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
-            }
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//                Thread.currentThread().interrupt();
+//            }
         }
     }
 
