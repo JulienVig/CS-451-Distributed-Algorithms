@@ -22,9 +22,9 @@ import java.util.function.Consumer;
 public class FairLossLink extends Layer{
     private DatagramSocket ds;
     private BlockingQueue<Packet> sendBuffer;
-    private HashMap<Integer, Host> hostIdMapping = new HashMap<>();
+    private Host[] hostIdMapping;
     private Consumer<Integer> pollRetransmissions;
-    private final int WINDOW_SIZE = 50;
+    private final int WINDOW_SIZE = 300;
 
     public FairLossLink(int myPort, List<Host> hosts, BlockingQueue<Packet> sendBuffer,
                         Consumer<Packet> upperLayerDeliver, Consumer<Integer> pollRetransmissions) {
@@ -36,7 +36,8 @@ public class FairLossLink extends Layer{
             Thread.currentThread().interrupt();
         }
         this.pollRetransmissions = pollRetransmissions;
-        for (Host host : hosts) hostIdMapping.put(host.getId(), host);
+        hostIdMapping = new Host[hosts.size()];
+        for (Host host : hosts) hostIdMapping[host.getId() - 1] = host;
         this.sendBuffer = sendBuffer;
         this.upperLayerDeliver = upperLayerDeliver;
         new Thread(this::flushSendBuffer).start();
@@ -51,6 +52,7 @@ public class FairLossLink extends Layer{
                 DatagramPacket dp = new DatagramPacket(buf, buf.length);
                 ds.receive(dp);
                 upperLayerDeliver.accept(deserializePkt(dp.getData()));
+//                System.out.println("FL deliver");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -77,11 +79,11 @@ public class FairLossLink extends Layer{
 
     private void sendPacket(Packet pkt) {
         try {
-            InetAddress ip = InetAddress.getByName(hostIdMapping.get(pkt.getReceiverId()).getIp());
-            DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(), ip,
-                                                    hostIdMapping.get(pkt.getReceiverId()).getPort());
+            Host receiver = hostIdMapping[pkt.getReceiverId() - 1];
+            DatagramPacket dp = new DatagramPacket(pkt.getBytes(), pkt.length(),
+                    receiver.getInetAddress(), receiver.getPort());
             ds.send(dp);
-
+            System.out.println("FL deliver");
         } catch (Exception e) {
             System.err.println("Exception while sending " + pkt + " through " + this);
             e.printStackTrace();

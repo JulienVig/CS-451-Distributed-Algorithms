@@ -11,7 +11,8 @@ import java.util.function.Consumer;
 
 public class PerfectLink extends Layer {
 //    private final ConcurrentSkipListSet<Long> pktToBeAck = new ConcurrentSkipListSet<>(); //ConcurrentHashSet
-    private final Set<Long> pktToBeAck = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
+//    private final Set<PayloadPacket> pktToBeAck = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
+//    private final Set<PayloadPacket> pktSent = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
     private final ConcurrentHashMap<Long, PayloadPacket> pktSent = new ConcurrentHashMap<>();
     private final HashSet<Long> pktReceived = new HashSet<>();
     private final BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
@@ -60,7 +61,7 @@ public class PerfectLink extends Layer {
             e.printStackTrace();
         }
         long pktId = pkt.getPktId();
-        pktToBeAck.add(pktId);
+//        pktToBeAck.add(pktId);
         pktSent.put(pktId, pkt);
     }
 
@@ -80,7 +81,8 @@ public class PerfectLink extends Layer {
             }
         } else {
             AckPacket ackPacket = (AckPacket) pkt;
-            pktToBeAck.remove(ackPacket.getPayloadPktId());
+//            pktToBeAck.remove(ackPacket.getPayloadPktId());
+            pktSent.remove(ackPacket.getPayloadPktId());
         }
     }
 
@@ -98,13 +100,13 @@ public class PerfectLink extends Layer {
 
     private void pollRetransmissions(int windowSize){
         try {
-            if (pktToBeAck.isEmpty()) return;
+            if (pktSent.isEmpty()) return;
 
             int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
-            Iterator<Long> iter = pktToBeAck.iterator();
+            Iterator<Map.Entry<Long, PayloadPacket>> iter = pktSent.entrySet().iterator();
             PayloadPacket pkt;
             while (iter.hasNext() && counter < windowSize) {
-                if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
+                if ((pkt = pktSent.getOrDefault(iter.next().getKey(), null)) != null) {
                     sendPayload(pkt);
                     counter++;
                 }
@@ -113,28 +115,4 @@ public class PerfectLink extends Layer {
             e.printStackTrace();
         }
     }
-
-//    private void startRetransmissions(){
-//        // Set a periodic retransmission of packets not yet ack
-//        final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-//        executorService.scheduleWithFixedDelay(() -> {
-//            try {
-//                if (pktToBeAck.isEmpty()) return;
-//                if (sendBuffer.size() > WINDOW_SIZE) return;
-//
-//                int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
-//                Iterator<Long> iter = pktToBeAck.iterator();
-//                PayloadPacket pkt;
-//                while (iter.hasNext() && counter < WINDOW_SIZE) {
-//                    if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
-//                        sendPayload(pkt);
-//                        counter++;
-//                    }
-//                }
-//            } catch (Throwable e){
-//                e.printStackTrace();
-//                Thread.currentThread().interrupt();
-//            }
-//        }, 100, 100, TimeUnit.MILLISECONDS);
-//    }
 }

@@ -76,14 +76,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--proc_num",
+        "-p",
         required=True,
         type=check_positive,
         dest="proc_num",
         help="Total number of processes",
     )
     parser.add_argument(
-        "--log_folder",
+        "-l",
         required=True,
         dest="log_folder",
         help="log_folder",
@@ -110,28 +110,30 @@ if __name__ == "__main__":
         if not checkProcess(os.path.join(results.log_folder,o)):
             all_ok = False
             print("Validation failed!")
-        if not checkStderr(os.path.join(results.log_folder, stderr_files[i])):
+        if len(stderr_files) and not checkStderr(os.path.join(results.log_folder, stderr_files[i])):
             print("Stderr not empty!")
 
-        start, end = check_stdout(os.path.join(results.log_folder, stdout_files[i]))
-        if start < earliest_start:
-            earliest_start = start
-            earliest_process = stdout_files[i]
-        if start > latest_start:
-            latest_start = start
+        if len(stdout_files):
+            start, end = check_stdout(os.path.join(results.log_folder, stdout_files[i]))
+            if start < earliest_start:
+                earliest_start = start
+                earliest_process = stdout_files[i]
+            if start > latest_start:
+                latest_start = start
 
-        if end < earliest_end:
-            earliest_end = end
-        if end > latest_end:
-            latest_end = end
-            latest_process = stdout_files[i]
+            if end < earliest_end:
+                earliest_end = end
+            if end > latest_end:
+                latest_end = end
+                latest_process = stdout_files[i]
 
     
     print("All outputs are valid" if all_ok else "Some outputs are not valid")
     # print("First process to start:", earliest_process)
     # print("Last process to end:", latest_process)
-    print("Time between first start and last start:", latest_start - earliest_start, "ms")
-    print("Time between last start and last end:", latest_end - latest_start, "ms")
-    print("Time between last start and first end:", earliest_end - latest_start, "ms")
-    print("Overall time:", latest_end - earliest_start, "ms")
+    if len(stdout_files):
+        print("Time between first start and last start:", latest_start - earliest_start, "ms")
+        print("Time between last start and last end:", latest_end - latest_start, "ms")
+        print("Time between last start and first end:", earliest_end - latest_start, "ms")
+        print("Overall time:", latest_end - earliest_start, "ms")
 

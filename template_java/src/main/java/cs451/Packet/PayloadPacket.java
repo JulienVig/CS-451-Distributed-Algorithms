@@ -47,8 +47,8 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
 
     @Override
     public String toString() {
-        return String.valueOf(getPktId());
-//        return originalSenderId + " " + getSenderId() + " " + getReceiverId() + " " + seqNb;
+//        return String.valueOf(getPktId());
+        return originalSenderId + " " + getSenderId() + " " + getReceiverId() + " " + seqNb;
     }
 
     @Override
@@ -64,11 +64,7 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
 
     public static Packet deserializeToObject(byte[] bytes){
         ByteBuffer bb = ByteBuffer.wrap(bytes, 1, 20);//Offset of 1 since the first byte is the Packet type
-        int seqNb = bb.getInt();
-        int originalSenderId = bb.getInt();
-        int senderId= bb.getInt();
-        int receiverId = bb.getInt();
-        return new PayloadPacket(seqNb, originalSenderId, senderId, receiverId, bytes);
+        return new PayloadPacket(bb.getInt(), bb.getInt(), bb.getInt(), bb.getInt(), bytes);
     }
 }
 
