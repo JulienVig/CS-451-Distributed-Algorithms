@@ -10,9 +10,9 @@ import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class PerfectLink extends Layer {
-    private final ConcurrentSkipListSet<Long> pktToBeAck = new ConcurrentSkipListSet<>(); //ConcurrentHashSet
+    private final ConcurrentSkipListSet<Long> pktToBeAck = new ConcurrentSkipListSet<>();
 //    private final Set<PayloadPacket> pktToBeAck = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
-    private final ConcurrentHashMap<Long, PayloadPacket> pktSent = new ConcurrentHashMap<>(); //ConcurrentHashSet
+    private final ConcurrentHashMap<Long, PayloadPacket> pktSent = new ConcurrentHashMap<>();
 
     //Needs to be a map and not a set to be able to remove packets given the pktId in an AckPacket
 //    private final ConcurrentHashMap<Long, PayloadPacket> pktToBeAck = new ConcurrentHashMap<>();
@@ -23,7 +23,7 @@ public class PerfectLink extends Layer {
         this.upperLayerDeliver = upperLayerDeliver;
         FairLossLink link = new FairLossLink(myPort, hosts, sendBuffer, this::deliver, this::pollRetransmissions);
         new Thread(link).start();
-        new Thread(this::startRetransmissions).start();
+//        new Thread(this::startRetransmissions).start();
     }
 
     public PerfectLink(int myPort, List<Host> hosts, Consumer<Packet> upperLayerDeliver,
@@ -101,8 +101,8 @@ public class PerfectLink extends Layer {
     private void pollRetransmissions(int windowSize){
         try {
             if (pktToBeAck.isEmpty()) return;
-
-            int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
+            if (pktToBeAck.size() > windowSize) return;
+            int counter = 0;
             Iterator<Long> iter = pktToBeAck.iterator();
             PayloadPacket pkt;
             while (iter.hasNext() && counter < windowSize) {
@@ -116,28 +116,28 @@ public class PerfectLink extends Layer {
         }
     }
 
-    private void startRetransmissions() {
-        final int WINDOW_SIZE = 50;
-        // Set a periodic retransmission of packets not yet ack
-        final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-        executorService.scheduleWithFixedDelay(() -> {
-            try {
-                if (pktToBeAck.isEmpty()) return;
-                if (sendBuffer.size() > WINDOW_SIZE) return;
-
-                int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
-                Iterator<Long> iter = pktToBeAck.iterator();
-                PayloadPacket pkt;
-                while (iter.hasNext() && counter < WINDOW_SIZE) {
-                    if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
-                        sendPayload(pkt);
-                        counter++;
-                    }
-                }
-            } catch (Throwable e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
-            }
-        }, 100, 100, TimeUnit.MILLISECONDS);
-    }
+//    private void startRetransmissions() {
+//        final int WINDOW_SIZE = 50;
+//        // Set a periodic retransmission of packets not yet ack
+//        final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+//        executorService.scheduleWithFixedDelay(() -> {
+//            try {
+//                if (pktToBeAck.isEmpty()) return;
+//                if (sendBuffer.size() > WINDOW_SIZE) return;
+//
+//                int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
+//                Iterator<Long> iter = pktToBeAck.iterator();
+//                PayloadPacket pkt;
+//                while (iter.hasNext() && counter < WINDOW_SIZE) {
+//                    if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
+//                        sendPayload(pkt);
+//                        counter++;
+//                    }
+//                }
+//            } catch (Throwable e) {
+//                e.printStackTrace();
+//                Thread.currentThread().interrupt();
+//            }
+//        }, 100, 100, TimeUnit.MILLISECONDS);
+//    }
 }
