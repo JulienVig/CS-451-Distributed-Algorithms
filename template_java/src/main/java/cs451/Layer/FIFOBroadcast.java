@@ -12,9 +12,7 @@ import java.util.function.Consumer;
 
 public class FIFOBroadcast extends Layer {
 
-    private final int[] next; //Map<Host id, seq nb>
-    // Use Map<simple Id, packet> because we don't want equality tested on
-    // pktId but only on simpleId
+    private final int[] next; // one entry per host
     //One priority queue per host, where PriorityQueues' comparator uses pktSimpleId
     private final PriorityQueue<PayloadPacket>[] pending;
     private final Writer writer;
@@ -25,6 +23,7 @@ public class FIFOBroadcast extends Layer {
         this.writer = writer;
         next = new int[hosts.size()];
         pending = new PriorityQueue[hosts.size()];
+        // Comparator on simpleId because we don't want equality tested on pktId
         for (int i = 0; i < pending.length; i++) pending[i] = new PriorityQueue<>(Comparator.comparing(PayloadPacket::getSimpleId));
         for (Host host : hosts) next[host.getId() - 1] = 1;
         UniformReliableBroadcast urb = new UniformReliableBroadcast(nbMessageToSend, writer, myHost, hosts, this::deliver);

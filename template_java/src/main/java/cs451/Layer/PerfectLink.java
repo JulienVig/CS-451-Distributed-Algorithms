@@ -13,7 +13,9 @@ public class PerfectLink extends Layer {
 //    private final ConcurrentSkipListSet<Long> pktToBeAck = new ConcurrentSkipListSet<>(); //ConcurrentHashSet
 //    private final Set<PayloadPacket> pktToBeAck = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
 //    private final Set<PayloadPacket> pktSent = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
-    private final ConcurrentHashMap<Long, PayloadPacket> pktSent = new ConcurrentHashMap<>();
+
+    //Needs to be a map and not a set to be able to remove packets given the pktId in an AckPacket
+    private final ConcurrentHashMap<Long, PayloadPacket> pktToBeAck = new ConcurrentHashMap<>();
     private final HashSet<Long> pktReceived = new HashSet<>();
     private final BlockingQueue<Packet> sendBuffer = new LinkedBlockingQueue<>();
 
@@ -61,8 +63,7 @@ public class PerfectLink extends Layer {
             e.printStackTrace();
         }
         long pktId = pkt.getPktId();
-//        pktToBeAck.add(pktId);
-        pktSent.put(pktId, pkt);
+        pktToBeAck.put(pktId, pkt);
     }
 
     @Override
@@ -81,8 +82,7 @@ public class PerfectLink extends Layer {
             }
         } else {
             AckPacket ackPacket = (AckPacket) pkt;
-//            pktToBeAck.remove(ackPacket.getPayloadPktId());
-            pktSent.remove(ackPacket.getPayloadPktId());
+            pktToBeAck.remove(ackPacket.getPayloadPktId());
         }
     }
 
@@ -96,20 +96,15 @@ public class PerfectLink extends Layer {
         }
     }
 
-
-
     private void pollRetransmissions(int windowSize){
         try {
-            if (pktSent.isEmpty()) return;
+            if (pktToBeAck.isEmpty()) return;
 
             int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
-            Iterator<Map.Entry<Long, PayloadPacket>> iter = pktSent.entrySet().iterator();
-            PayloadPacket pkt;
+            Iterator<Map.Entry<Long, PayloadPacket>> iter = pktToBeAck.entrySet().iterator();
             while (iter.hasNext() && counter < windowSize) {
-                if ((pkt = pktSent.getOrDefault(iter.next().getKey(), null)) != null) {
-                    sendPayload(pkt);
-                    counter++;
-                }
+                sendPayload(iter.next().getValue());
+                counter++;
             }
         } catch (Throwable e){
             e.printStackTrace();
