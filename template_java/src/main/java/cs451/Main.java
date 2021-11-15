@@ -8,6 +8,8 @@ import java.time.ZonedDateTime;
 
 public class Main {
 
+    public static boolean TC = false;
+
     private static void handleSignal(Writer writer) {
         //immediately stop network packet processing
         System.out.println("Immediately stopping network packet processing.");

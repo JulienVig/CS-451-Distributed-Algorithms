@@ -1,6 +1,7 @@
 package cs451.Layer;
 
 import cs451.Host;
+import cs451.Main;
 import cs451.Packet.AckPacket;
 import cs451.Packet.Packet;
 import cs451.Packet.PacketType;
@@ -51,6 +52,7 @@ public class FairLossLink extends Layer{
                 buf = new byte[512];
                 DatagramPacket dp = new DatagramPacket(buf, buf.length);
                 ds.receive(dp);
+                if(Main.TC &&  Math.random() <=.25) return; //Drop 25% of pkts
                 upperLayerDeliver.accept(deserializePkt(dp.getData()));
 //                System.out.println("FL deliver");
             }

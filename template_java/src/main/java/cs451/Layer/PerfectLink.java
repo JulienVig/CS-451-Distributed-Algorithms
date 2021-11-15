@@ -1,6 +1,7 @@
 package cs451.Layer;
 
 import cs451.Host;
+import cs451.Main;
 import cs451.Packet.AckPacket;
 import cs451.Packet.Packet;
 import cs451.Packet.PayloadPacket;
@@ -90,7 +91,7 @@ public class PerfectLink extends Layer {
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleWithFixedDelay(() -> {
             try {
-                if (pktToBeAck.isEmpty() | sendBuffer.size() > WINDOW_SIZE) return;
+                if (pktToBeAck.isEmpty() || sendBuffer.size() > WINDOW_SIZE) return;
 
                 int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
                 Iterator<Long> iter = pktToBeAck.iterator();
