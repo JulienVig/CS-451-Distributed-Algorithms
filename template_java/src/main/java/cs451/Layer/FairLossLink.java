@@ -23,11 +23,9 @@ public class FairLossLink extends Layer{
     private DatagramSocket ds;
     private BlockingQueue<Packet> sendBuffer;
     private Host[] hostIdMapping;
-    private Consumer<Integer> pollRetransmissions;
-    private final int WINDOW_SIZE = 300;
 
     public FairLossLink(int myPort, List<Host> hosts, BlockingQueue<Packet> sendBuffer,
-                        Consumer<Packet> upperLayerDeliver, Consumer<Integer> pollRetransmissions) {
+                        Consumer<Packet> upperLayerDeliver) {
         try {
             this.ds = new DatagramSocket(myPort);
         } catch (SocketException e) {
@@ -35,7 +33,7 @@ public class FairLossLink extends Layer{
             e.printStackTrace();
             Thread.currentThread().interrupt();
         }
-        this.pollRetransmissions = pollRetransmissions;
+
         hostIdMapping = new Host[hosts.size()];
         for (Host host : hosts) hostIdMapping[host.getId() - 1] = host;
         this.sendBuffer = sendBuffer;
@@ -69,7 +67,7 @@ public class FairLossLink extends Layer{
         while (true) {
             try {
                 sendPacket(sendBuffer.take());
-                if (sendBuffer.size() < WINDOW_SIZE) pollRetransmissions.accept(WINDOW_SIZE);
+//                if (sendBuffer.size() < WINDOW_SIZE) pollRetransmissions.accept(WINDOW_SIZE);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Thread.currentThread().interrupt();

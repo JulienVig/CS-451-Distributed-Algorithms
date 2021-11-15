@@ -21,9 +21,9 @@ public class PerfectLink extends Layer {
 
     public PerfectLink(int myPort, List<Host> hosts, Consumer<Packet> upperLayerDeliver) {
         this.upperLayerDeliver = upperLayerDeliver;
-        FairLossLink link = new FairLossLink(myPort, hosts, sendBuffer, this::deliver, this::pollRetransmissions);
+        FairLossLink link = new FairLossLink(myPort, hosts, sendBuffer, this::deliver);
         new Thread(link).start();
-//        new Thread(this::startRetransmissions).start();
+        startRetransmissions();
     }
 
     public PerfectLink(int myPort, List<Host> hosts, Consumer<Packet> upperLayerDeliver,
@@ -56,16 +56,17 @@ public class PerfectLink extends Layer {
     }
 
     public void sendPayload(PayloadPacket pkt) {
-        try {
-            sendBuffer.put(pkt);
-        } catch (InterruptedException e) {
-            System.err.println("Couldn't add packet to sendBuffer queue");
-            e.printStackTrace();
-        }
+//        try {
+//            sendBuffer.put(pkt);
+//        } catch (InterruptedException e) {
+//            System.err.println("Couldn't add packet to sendBuffer queue");
+//            e.printStackTrace();
+//        }
         long pktId = pkt.getPktId();
         pktToBeAck.add(pktId);
         pktSent.put(pktId, pkt);
     }
+
 
     @Override
     public String toString() {
@@ -98,46 +99,27 @@ public class PerfectLink extends Layer {
         }
     }
 
-    private void pollRetransmissions(int windowSize){
-        try {
-            if (pktToBeAck.isEmpty()) return;
-            if (pktToBeAck.size() > windowSize) return;
-            int counter = 0;
-            Iterator<Long> iter = pktToBeAck.iterator();
-            PayloadPacket pkt;
-            while (iter.hasNext() && counter < windowSize) {
-                if((pkt = pktSent.getOrDefault(iter.next(), null)) != null){
-                    sendPayload(pkt);
-                    counter++;
-                }
-            }
-        } catch (Throwable e){
-            e.printStackTrace();
-        }
-    }
+    private void startRetransmissions() {
+        final int WINDOW_SIZE = 300;
+        // Set a periodic retransmission of packets not yet ack
+        final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService.scheduleWithFixedDelay(() -> {
+            try {
+                if (pktToBeAck.isEmpty() | sendBuffer.size() > WINDOW_SIZE) return;
 
-//    private void startRetransmissions() {
-//        final int WINDOW_SIZE = 50;
-//        // Set a periodic retransmission of packets not yet ack
-//        final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-//        executorService.scheduleWithFixedDelay(() -> {
-//            try {
-//                if (pktToBeAck.isEmpty()) return;
-//                if (sendBuffer.size() > WINDOW_SIZE) return;
-//
-//                int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
-//                Iterator<Long> iter = pktToBeAck.iterator();
-//                PayloadPacket pkt;
-//                while (iter.hasNext() && counter < WINDOW_SIZE) {
-//                    if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
-//                        sendPayload(pkt);
-//                        counter++;
-//                    }
-//                }
-//            } catch (Throwable e) {
-//                e.printStackTrace();
-//                Thread.currentThread().interrupt();
-//            }
-//        }, 100, 100, TimeUnit.MILLISECONDS);
-//    }
+                int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
+                Iterator<Long> iter = pktToBeAck.iterator();
+                PayloadPacket pkt;
+                while (iter.hasNext() && counter < WINDOW_SIZE) {
+                    if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
+                        sendBuffer.offer(pkt);
+                        counter++;
+                    }
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+            }
+        }, 100, 100, TimeUnit.MILLISECONDS);
+    }
 }
