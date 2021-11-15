@@ -69,7 +69,7 @@ public class FairLossLink extends Layer{
         while (true) {
             try {
                 sendPacket(sendBuffer.take());
-                if (sendBuffer.size() < WINDOW_SIZE) pollRetransmissions.accept(WINDOW_SIZE);
+//                if (sendBuffer.size() < WINDOW_SIZE) pollRetransmissions.accept(WINDOW_SIZE);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Thread.currentThread().interrupt();

@@ -23,6 +23,7 @@ public class PerfectLink extends Layer {
         this.upperLayerDeliver = upperLayerDeliver;
         FairLossLink link = new FairLossLink(myPort, hosts, sendBuffer, this::deliver, this::pollRetransmissions);
         new Thread(link).start();
+        new Thread(this::startRetransmissions).start();
     }
 
     public PerfectLink(int myPort, List<Host> hosts, Consumer<Packet> upperLayerDeliver,
@@ -113,5 +114,30 @@ public class PerfectLink extends Layer {
         } catch (Throwable e){
             e.printStackTrace();
         }
+    }
+
+    private void startRetransmissions() {
+        final int WINDOW_SIZE = 50;
+        // Set a periodic retransmission of packets not yet ack
+        final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService.scheduleWithFixedDelay(() -> {
+            try {
+                if (pktToBeAck.isEmpty()) return;
+                if (sendBuffer.size() > WINDOW_SIZE) return;
+
+                int counter = 0; //Limit the number of retransmissions to WINDOW_SIZE
+                Iterator<Long> iter = pktToBeAck.iterator();
+                PayloadPacket pkt;
+                while (iter.hasNext() && counter < WINDOW_SIZE) {
+                    if ((pkt = pktSent.getOrDefault(iter.next(), null)) != null) {
+                        sendPayload(pkt);
+                        counter++;
+                    }
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+            }
+        }, 100, 100, TimeUnit.MILLISECONDS);
     }
 }
