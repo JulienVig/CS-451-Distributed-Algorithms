@@ -17,7 +17,7 @@ public class PerfectLink extends Layer {
     //Needs to be a map and not a set to be able to remove packets given the pktId in an AckPacket
 //    private final ConcurrentHashMap<Long, PayloadPacket> pktToBeAck = new ConcurrentHashMap<>();
     private final HashSet<Long> pktReceived = new HashSet<>();
-    private final ConcurrentLinkedDeque<Packet> sendBuffer = new ConcurrentLinkedDeque<>();
+    private final BlockingDeque<Packet> sendBuffer = new LinkedBlockingDeque<>();
 
     public PerfectLink(int myPort, List<Host> hosts, Consumer<Packet> upperLayerDeliver) {
         this.upperLayerDeliver = upperLayerDeliver;
@@ -34,12 +34,7 @@ public class PerfectLink extends Layer {
 
     @Override
     public void deliver(Packet pkt) {
-        try {
-            delivered.put(pkt);
-        } catch(InterruptedException e){
-            System.err.println("Couldn't add packet to receiveBuffer queue");
-            e.printStackTrace();
-        }
+        delivered.offer(pkt);
     }
 
     @Override
