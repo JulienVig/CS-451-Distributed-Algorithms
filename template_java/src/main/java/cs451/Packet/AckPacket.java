@@ -17,7 +17,7 @@ public class AckPacket extends Packet{
 
     public AckPacket(PayloadPacket payloadPkt){
         this.payloadPktId = payloadPkt.getPktId();
-        setPktId(- payloadPktId);
+        setPktId(payloadPktId + 1);
         // Swap hosts for response
         setReceiverId(payloadPkt.getSenderId());
         setSenderId(payloadPkt.getReceiverId());

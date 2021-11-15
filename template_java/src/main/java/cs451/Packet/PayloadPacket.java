@@ -26,7 +26,8 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
     }
 
     private long createPktId(int seqNb, int originalSenderId, int senderId, int receiverId){
-        return seqNb * idBase1 + originalSenderId * idBase2 + senderId * idBase3 + receiverId;
+        //shift by one bit to make it even (ack packets are odd)
+        return (seqNb * idBase1 + originalSenderId * idBase2 + senderId * idBase3 + receiverId) << 1;
     }
     public long getSimpleId(){
         if (simpleId == 0) simpleId = seqNb * idBase3 + originalSenderId;
