@@ -15,6 +15,13 @@ import java.nio.ByteBuffer;
 public class AckPacket extends Packet{
     private long payloadPktId;
 
+    public static final int BYTE_SIZE = 9;
+
+    @Override
+    public int getByteSize() {
+        return BYTE_SIZE;
+    }
+
     public AckPacket(PayloadPacket payloadPkt){
         this.payloadPktId = payloadPkt.getPktId();
         setPktId(payloadPktId + 1);
@@ -38,14 +45,22 @@ public class AckPacket extends Packet{
 
     @Override
     public byte[] serializeToBytes() {
-        ByteBuffer bb = ByteBuffer.allocate(9);
-        bb.put((byte) 0); // 0 for PayloadPacket
-        bb.putLong(payloadPktId);
+        ByteBuffer bb = ByteBuffer.allocate(BYTE_SIZE);
+        serializeToBytes(bb);
         return bb.array();
     }
 
+    @Override
+    public void serializeToBytes(ByteBuffer bb){
+        bb.put((byte) 0); // 0 for PayloadPacket
+        bb.putLong(payloadPktId);
+    }
+
     public static Packet deserializeToObject(byte[] bytes){
-        ByteBuffer bb = ByteBuffer.wrap(bytes, 1, 8);//Offset of 1 since the first byte is the Packet type
+        ByteBuffer bb = ByteBuffer.wrap(bytes, 1, BYTE_SIZE - 1);//Offset of 1 since the first byte is the Packet type
         return new AckPacket(bb.getLong());
+    }
+    public AckPacket(ByteBuffer bb){
+        this(bb.getLong());
     }
 }

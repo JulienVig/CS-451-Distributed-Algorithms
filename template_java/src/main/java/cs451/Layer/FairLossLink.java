@@ -2,10 +2,7 @@ package cs451.Layer;
 
 import cs451.Host;
 import cs451.Main;
-import cs451.Packet.AckPacket;
-import cs451.Packet.Packet;
-import cs451.Packet.PacketType;
-import cs451.Packet.PayloadPacket;
+import cs451.Packet.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -16,6 +13,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
@@ -49,11 +47,11 @@ public class FairLossLink extends Layer{
         try {
             byte[] buf;
             while (true) {
-                buf = new byte[512];
+                buf = new byte[BatchPacket.BYTE_CAPACITY];
                 DatagramPacket dp = new DatagramPacket(buf, buf.length);
                 ds.receive(dp);
-                if(Main.TC &&  Math.random() <=.25) return; //Drop 25% of pkts
-                upperLayerDeliver.accept(deserializePkt(dp.getData()));
+//                if(Main.TC &&  Math.random() <=.25) return; //Drop 25% of pkts
+                upperLayerDeliver.accept(BatchPacket.deserializeToObject(dp.getData()));
 //                System.out.println("FL deliver");
             }
         } catch (IOException e) {
@@ -70,13 +68,29 @@ public class FairLossLink extends Layer{
     private void flushSendBuffer() {
         while (true) {
             try {
-                sendPacket(sendBuffer.takeFirst());
+                sendBatch(sendBuffer.takeFirst());
 //                if (sendBuffer.size() < WINDOW_SIZE) pollRetransmissions.accept(WINDOW_SIZE);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    private void sendBatch(Packet firstPkt){
+        BatchPacket batch = new BatchPacket(firstPkt);
+        int receiverId = firstPkt.getReceiverId();
+
+        Iterator<Packet> iter = sendBuffer.iterator();
+        Packet pkt;
+        while(iter.hasNext() && !batch.isFull()){
+            pkt = iter.next();
+            if (pkt.getReceiverId() == receiverId) {
+                batch.addPacket(pkt);
+                iter.remove();
+            }
+        }
+        sendPacket(batch);
     }
 
     private void sendPacket(Packet pkt) {
@@ -90,9 +104,9 @@ public class FairLossLink extends Layer{
             e.printStackTrace();
         }
     }
-
-    private Packet deserializePkt(byte[] bytes){
-        return bytes[0] == (byte) 1 ? PayloadPacket.deserializeToObject(bytes) : AckPacket.deserializeToObject(bytes);
-    }
+//
+//    private Packet deserializePkt(byte[] bytes){
+//        return bytes[0] == (byte) 1 ? PayloadPacket.deserializeToObject(bytes) : AckPacket.deserializeToObject(bytes);
+//    }
 
 }

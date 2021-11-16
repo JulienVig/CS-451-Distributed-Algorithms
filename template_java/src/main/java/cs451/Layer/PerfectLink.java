@@ -3,6 +3,7 @@ package cs451.Layer;
 import cs451.Host;
 import cs451.Main;
 import cs451.Packet.AckPacket;
+import cs451.Packet.BatchPacket;
 import cs451.Packet.Packet;
 import cs451.Packet.PayloadPacket;
 
@@ -42,8 +43,8 @@ public class PerfectLink extends Layer {
     public void run() {
         while (true) {
             try {
-                Packet receivedPkt = delivered.take();
-                processPacket(receivedPkt);
+                BatchPacket batch = (BatchPacket) delivered.take();
+                for (Packet receivedPkt : batch.getPackets()) processPacket(receivedPkt);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Thread.currentThread().interrupt();
@@ -64,6 +65,7 @@ public class PerfectLink extends Layer {
     }
 
     private void processPacket(Packet pkt){
+//        System.out.println("PL delivered "+ pkt);
         if (pkt instanceof PayloadPacket) {
             PayloadPacket payloadPkt = (PayloadPacket) pkt;
             sendAck(payloadPkt); // Always send ack when receiving a payload packet

@@ -3,18 +3,24 @@ package cs451.Packet;
 import cs451.Host;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.Objects;
 
 /**
  * Serialization inspired from https://stackoverflow.com/questions/2836646/java-serializable-object-to-byte-array
  */
 public abstract class Packet {
-    private transient byte[] byteArray = null;
+    private byte[] byteArray = null;
     private long pktId;
     private int senderId;
     private int receiverId;
 
     abstract public byte[] serializeToBytes();
+
+    abstract public void serializeToBytes(ByteBuffer bb);
+
+
+    abstract public int getByteSize();
 
     public int length() {
         return byteArray.length;

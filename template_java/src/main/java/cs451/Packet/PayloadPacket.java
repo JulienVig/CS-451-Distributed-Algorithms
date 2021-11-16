@@ -1,6 +1,7 @@
 package cs451.Packet;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPacket>{
     private int seqNb;
@@ -11,6 +12,13 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
     private static final long idBase1 = (long) Math.pow(10, 12);
     private static final long idBase2 = 100000000;
     private static final long idBase3 = 10000;
+
+    public static final int BYTE_SIZE = 17;
+
+    @Override
+    public int getByteSize() {
+        return BYTE_SIZE;
+    }
 
     public PayloadPacket(int seqNb, int originalSenderId, int senderId, int receiverId) {
         setPktId(createPktId(seqNb, originalSenderId, senderId, receiverId));
@@ -54,18 +62,29 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
 
     @Override
     public byte[] serializeToBytes(){
-        ByteBuffer bb = ByteBuffer.allocate(21);
+        ByteBuffer bb = ByteBuffer.allocate(BYTE_SIZE);
+        serializeToBytes(bb);
+        return bb.array();
+    }
+
+    @Override
+    public void serializeToBytes(ByteBuffer bb) {
         bb.put((byte) 1); // 1 for PayloadPacket
         bb.putInt(seqNb);
         bb.putInt(originalSenderId);
         bb.putInt(getSenderId());
         bb.putInt(getReceiverId());
-        return bb.array();
     }
 
+
     public static Packet deserializeToObject(byte[] bytes){
-        ByteBuffer bb = ByteBuffer.wrap(bytes, 1, 20);//Offset of 1 since the first byte is the Packet type
+        ByteBuffer bb = ByteBuffer.wrap(bytes, 1, BYTE_SIZE - 1);//Offset of 1 since the first byte is the Packet type
         return new PayloadPacket(bb.getInt(), bb.getInt(), bb.getInt(), bb.getInt(), bytes);
+    }
+    public PayloadPacket(ByteBuffer bb, byte[] bytes){
+//        ByteBuffer bb = ByteBuffer.wrap(bytes, offset, 20);//Offset of 1 since the first byte is the Packet type
+        this(bb.getInt(), bb.getInt(), bb.getInt(), bb.getInt(), bytes);
+//                Arrays.copyOfRange(bytes, offset, offset + 21));
     }
 }
 
