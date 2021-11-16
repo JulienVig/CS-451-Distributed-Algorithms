@@ -5,10 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class BatchPacket extends Packet {
-    public static final int BYTE_CAPACITY = 508000; //doesn't change perf when above 508
+    public static final int BYTE_CAPACITY = 65507;// 64000; //doesn't change perf when above 508
     private ByteBuffer bb;
     private int length = 4;
     private ArrayList<Packet> packets;
+//    private int nbPkts;
 
     public BatchPacket(Packet firstPkt){
         setPktId(firstPkt.getPktId());
@@ -21,6 +22,7 @@ public class BatchPacket extends Packet {
     public void addPacket(Packet pkt){
         pkt.serializeToBytes(bb);
         length += pkt.getByteSize();
+//        nbPkts++;
     }
 
     public boolean isFull(){
@@ -33,6 +35,7 @@ public class BatchPacket extends Packet {
 
     @Override
     public byte[] serializeToBytes() {
+//        System.out.println(nbPkts);
         bb.rewind();
         bb.putInt(length);
         return (length >= 490) ? bb.array() : Arrays.copyOfRange(bb.array(),0, length);

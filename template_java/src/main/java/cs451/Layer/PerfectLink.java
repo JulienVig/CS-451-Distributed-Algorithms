@@ -82,7 +82,7 @@ public class PerfectLink extends Layer {
     }
 
     private void startRetransmissions() {
-        final int WINDOW_SIZE = 300;
+        final int WINDOW_SIZE = 10000;
         // Set a periodic retransmission of packets not yet ack
         final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleWithFixedDelay(() -> {

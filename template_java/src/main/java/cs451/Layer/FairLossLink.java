@@ -70,7 +70,7 @@ public class FairLossLink extends Layer{
     private void sendBatch(Packet firstPkt){
         BatchPacket batch = new BatchPacket(firstPkt);
         int receiverId = firstPkt.getReceiverId();
-
+//        System.out.println("Buffer size "+ sendBuffer.size());
         Iterator<Packet> iter = sendBuffer.iterator();
         Packet pkt;
         while(iter.hasNext() && !batch.isFull()){
