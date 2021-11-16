@@ -1,7 +1,6 @@
 package cs451;
 
 import cs451.Layer.FIFOBroadcast;
-import cs451.Layer.LogLayer;
 import cs451.Parser.Parser;
 
 import java.time.ZonedDateTime;
@@ -27,7 +26,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println("start " + ZonedDateTime.now().toInstant().toEpochMilli());
+//        System.out.println("start " + ZonedDateTime.now().toInstant().toEpochMilli());
         Parser parser = new Parser(args);
         parser.parse();
         Writer writer = new Writer(parser::writeToFile);
@@ -37,10 +36,7 @@ public class Main {
         int myId = parser.myId();
         Host myHost = null;
         for (Host host : parser.hosts()) if (host.getId() == myId) myHost = host;
-
-        LogLayer log = new LogLayer(parser.nbMessageToSend(), writer,
-                myHost, parser.hosts());
-        log.run();
+        new FIFOBroadcast(parser.nbMessageToSend(), writer, myHost, parser.hosts()).run();
     }
 
 }

@@ -17,9 +17,8 @@ public class FIFOBroadcast extends Layer {
     private final PriorityQueue<PayloadPacket>[] pending;
     private final Writer writer;
 
-    public FIFOBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts,
-                         Consumer<Packet> upperLayerDeliver) {
-        this.upperLayerDeliver = upperLayerDeliver;
+    public FIFOBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts) {
+//        this.upperLayerDeliver = upperLayerDeliver;
         this.writer = writer;
         next = new int[hosts.size()];
         pending = new PriorityQueue[hosts.size()];
@@ -34,7 +33,7 @@ public class FIFOBroadcast extends Layer {
     @Override
     public void deliver(Packet pkt) {
         delivered.offer(pkt);
-        upperLayerDeliver.accept(pkt);
+//        upperLayerDeliver.accept(pkt);
     }
 
     @Override
