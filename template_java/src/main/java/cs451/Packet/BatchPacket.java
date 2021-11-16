@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class BatchPacket extends Packet {
-    public static final int BYTE_CAPACITY = 508; //doesn't change perf when above 508
+    public static final int BYTE_CAPACITY = 508000; //doesn't change perf when above 508
     private ByteBuffer bb;
     private int length = 4;
     private ArrayList<Packet> packets;
