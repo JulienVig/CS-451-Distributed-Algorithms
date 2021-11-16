@@ -17,6 +17,7 @@ public class BestEffortBroadcast extends Layer{
     private final Consumer<PayloadPacket> upperLayerBroadcast;
     private final List<Host> hosts;
     private final Host myHost;
+    private int currentSeq;
 
     public BestEffortBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts,
                                Consumer<Packet> upperLayerDeliver, Consumer<PayloadPacket> upperLayerBroadcast) {

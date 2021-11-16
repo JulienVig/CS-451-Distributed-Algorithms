@@ -1,7 +1,6 @@
 package cs451.Layer;
 
 import cs451.Host;
-import cs451.Main;
 import cs451.Packet.AckPacket;
 import cs451.Packet.BatchPacket;
 import cs451.Packet.Packet;
@@ -13,11 +12,7 @@ import java.util.function.Consumer;
 
 public class PerfectLink extends Layer {
     private final ConcurrentSkipListSet<Long> pktToBeAck = new ConcurrentSkipListSet<>();
-//    private final Set<PayloadPacket> pktToBeAck = Collections.newSetFromMap(new ConcurrentHashMap<>()); //ConcurrentHashSet
     private final ConcurrentHashMap<Long, PayloadPacket> pktSent = new ConcurrentHashMap<>();
-
-    //Needs to be a map and not a set to be able to remove packets given the pktId in an AckPacket
-//    private final ConcurrentHashMap<Long, PayloadPacket> pktToBeAck = new ConcurrentHashMap<>();
     private final HashSet<Long> pktReceived = new HashSet<>();
     private final BlockingDeque<Packet> sendBuffer = new LinkedBlockingDeque<>();
 
@@ -65,7 +60,6 @@ public class PerfectLink extends Layer {
     }
 
     private void processPacket(Packet pkt){
-//        System.out.println("PL delivered "+ pkt);
         if (pkt instanceof PayloadPacket) {
             PayloadPacket payloadPkt = (PayloadPacket) pkt;
             sendAck(payloadPkt); // Always send ack when receiving a payload packet

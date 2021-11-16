@@ -56,10 +56,6 @@ public class AckPacket extends Packet{
         bb.putLong(payloadPktId);
     }
 
-    public static Packet deserializeToObject(byte[] bytes){
-        ByteBuffer bb = ByteBuffer.wrap(bytes, 1, BYTE_SIZE - 1);//Offset of 1 since the first byte is the Packet type
-        return new AckPacket(bb.getLong());
-    }
     public AckPacket(ByteBuffer bb){
         this(bb.getLong());
     }

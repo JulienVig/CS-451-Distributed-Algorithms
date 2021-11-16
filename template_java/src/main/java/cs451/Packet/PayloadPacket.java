@@ -76,15 +76,8 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
         bb.putInt(getReceiverId());
     }
 
-
-    public static Packet deserializeToObject(byte[] bytes){
-        ByteBuffer bb = ByteBuffer.wrap(bytes, 1, BYTE_SIZE - 1);//Offset of 1 since the first byte is the Packet type
-        return new PayloadPacket(bb.getInt(), bb.getInt(), bb.getInt(), bb.getInt(), bytes);
-    }
     public PayloadPacket(ByteBuffer bb, byte[] bytes){
-//        ByteBuffer bb = ByteBuffer.wrap(bytes, offset, 20);//Offset of 1 since the first byte is the Packet type
         this(bb.getInt(), bb.getInt(), bb.getInt(), bb.getInt(), bytes);
-//                Arrays.copyOfRange(bytes, offset, offset + 21));
     }
 }
 

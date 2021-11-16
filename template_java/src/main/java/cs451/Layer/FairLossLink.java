@@ -1,23 +1,16 @@
 package cs451.Layer;
 
 import cs451.Host;
-import cs451.Main;
-import cs451.Packet.*;
+import cs451.Packet.BatchPacket;
+import cs451.Packet.Packet;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Consumer;
 
 public class FairLossLink extends Layer{
@@ -50,9 +43,7 @@ public class FairLossLink extends Layer{
                 buf = new byte[BatchPacket.BYTE_CAPACITY];
                 DatagramPacket dp = new DatagramPacket(buf, buf.length);
                 ds.receive(dp);
-//                if(Main.TC &&  Math.random() <=.25) return; //Drop 25% of pkts
                 upperLayerDeliver.accept(BatchPacket.deserializeToObject(dp.getData()));
-//                System.out.println("FL deliver");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -69,7 +60,6 @@ public class FairLossLink extends Layer{
         while (true) {
             try {
                 sendBatch(sendBuffer.takeFirst());
-//                if (sendBuffer.size() < WINDOW_SIZE) pollRetransmissions.accept(WINDOW_SIZE);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Thread.currentThread().interrupt();
@@ -104,9 +94,4 @@ public class FairLossLink extends Layer{
             e.printStackTrace();
         }
     }
-//
-//    private Packet deserializePkt(byte[] bytes){
-//        return bytes[0] == (byte) 1 ? PayloadPacket.deserializeToObject(bytes) : AckPacket.deserializeToObject(bytes);
-//    }
-
 }

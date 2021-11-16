@@ -35,9 +35,7 @@ public abstract class Packet {
     }
 
     public byte[] getBytes() {
-        if (byteArray == null || byteArray.length == 0) {
-            setByteArray(serializeToBytes());
-        }
+        if (byteArray == null || byteArray.length == 0) setByteArray(serializeToBytes());
         return byteArray;
     }
 

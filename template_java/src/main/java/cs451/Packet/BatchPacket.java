@@ -5,10 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class BatchPacket extends Packet {
-    public static final int BYTE_CAPACITY = 5016;//508;
+    public static final int BYTE_CAPACITY = 508; //doesn't change perf when above 508
     private ByteBuffer bb;
     private int length = 4;
-//    private int nbPkt;
     private ArrayList<Packet> packets;
 
     public BatchPacket(Packet firstPkt){
@@ -22,7 +21,6 @@ public class BatchPacket extends Packet {
     public void addPacket(Packet pkt){
         pkt.serializeToBytes(bb);
         length += pkt.getByteSize();
-//        nbPkt++;
     }
 
     public boolean isFull(){
@@ -37,7 +35,6 @@ public class BatchPacket extends Packet {
     public byte[] serializeToBytes() {
         bb.rewind();
         bb.putInt(length);
-//        System.out.println("Serialize "+ nbPkt +" to " + length + " bytes");
         return (length >= 490) ? bb.array() : Arrays.copyOfRange(bb.array(),0, length);
     }
 
@@ -55,23 +52,19 @@ public class BatchPacket extends Packet {
         ByteBuffer bb = ByteBuffer.wrap(bytes);
         ArrayList<Packet> batch = new ArrayList<>();
 
-//        int count=0;
         int length = bb.getInt();
         int offset = 4;
         while(offset < length){
             bb.get(); //flush the first byte
             if(bytes[offset] == (byte) 1){
-                PayloadPacket pkt = new PayloadPacket(bb,
-                        Arrays.copyOfRange(bytes, offset, offset + PayloadPacket.BYTE_SIZE));
-                batch.add(pkt);
+                batch.add(new PayloadPacket(bb,
+                        Arrays.copyOfRange(bytes, offset, offset + PayloadPacket.BYTE_SIZE)));
                 offset += PayloadPacket.BYTE_SIZE;
             } else{
                 batch.add(new AckPacket(bb));
                 offset += AckPacket.BYTE_SIZE;
             }
-//            count++;
         }
-//        System.out.println("Deserialize " + length + " bytes to "+count+" packets");
         return new BatchPacket(batch);
     }
 
