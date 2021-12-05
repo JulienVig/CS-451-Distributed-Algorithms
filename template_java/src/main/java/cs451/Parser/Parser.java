@@ -2,6 +2,7 @@ package cs451.Parser;
 
 import cs451.Host;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
@@ -46,7 +47,7 @@ public class Parser {
             help("Output parsing failed");
         }
 
-        if (!configParser.populate(args[Constants.CONFIG_VALUE])) {
+        if (!configParser.populate(args[Constants.CONFIG_VALUE], hostsParser.getHosts().size())) {
             help("Config parsing failed");
         }
     }
@@ -85,5 +86,9 @@ public class Parser {
         return configParser.getNbMessage();
     }
     public int receiverID() {return configParser.getReceiverID();}
+
+    public ArrayList[] getHostDependencies() {
+        return configParser.getHostDep();
+    }
 
 }

@@ -1,11 +1,14 @@
 package cs451;
 
-import cs451.Layer.FIFOBroadcast;
+//import cs451.Layer.FIFOBroadcast;
+import cs451.Layer.LCBBroadcast;
 import cs451.Parser.Parser;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 
 public class Main {
+    public static int NB_HOSTS;
 
     private static void handleSignal(Writer writer) {
         //immediately stop network packet processing
@@ -25,10 +28,16 @@ public class Main {
         });
     }
 
+
     public static void main(String[] args) {
 //        System.out.println("start " + ZonedDateTime.now().toInstant().toEpochMilli());
         Parser parser = new Parser(args);
         parser.parse();
+        NB_HOSTS = parser.hosts().size();
+        for (ArrayList list :
+                parser.getHostDependencies()) {
+            System.out.println(list);
+        }
         Writer writer = new Writer(parser::writeToFile);
         initSignalHandlers(writer);
         new Thread(writer).start();
@@ -36,7 +45,8 @@ public class Main {
         int myId = parser.myId();
         Host myHost = null;
         for (Host host : parser.hosts()) if (host.getId() == myId) myHost = host;
-        new FIFOBroadcast(parser.nbMessageToSend(), writer, myHost, parser.hosts()).run();
+        new LCBBroadcast(parser.nbMessageToSend(), writer, myHost, parser.hosts(),
+                parser.getHostDependencies()).run();
     }
 
 }

@@ -3,17 +3,20 @@ package cs451.Packet;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import static cs451.Main.NB_HOSTS;
+
 public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPacket>{
     private int seqNb;
     private int payload; // The payload is not used
     private int originalSenderId;
     private long simpleId;
+    private int[] clock;
 
     private static final long idBase1 = (long) Math.pow(10, 12);
     private static final long idBase2 = 100000000;
     private static final long idBase3 = 10000;
 
-    public static final int BYTE_SIZE = 17;
+    public static final int BYTE_SIZE = 17 + 4 * NB_HOSTS;
 
     @Override
     public int getByteSize() {
@@ -42,8 +45,13 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
         return simpleId;
     }
 
-    public PayloadPacket(int seqNb, int senderId, int receiverId){
+    public int[] getClock(){
+        return clock;
+    }
+
+    public PayloadPacket(int seqNb, int senderId, int receiverId, int[] clock){
         this(seqNb, senderId, senderId, receiverId);
+        this.clock = clock;
     }
 
     public int getSeqNb() {
@@ -74,10 +82,14 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
         bb.putInt(originalSenderId);
         bb.putInt(getSenderId());
         bb.putInt(getReceiverId());
+        for (int lsn : clock) bb.putInt(lsn);
+
     }
 
     public PayloadPacket(ByteBuffer bb, byte[] bytes){
         this(bb.getInt(), bb.getInt(), bb.getInt(), bb.getInt(), bytes);
+        clock = new int[NB_HOSTS];
+        for (int i = 0; i < NB_HOSTS; i++) clock[i] = bb.getInt();
     }
 }
 
