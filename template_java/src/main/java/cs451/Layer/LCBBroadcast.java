@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.function.Consumer;
 
 public class LCBBroadcast extends Layer {
 
@@ -18,9 +19,11 @@ public class LCBBroadcast extends Layer {
     //One priority queue per host, where PriorityQueues' comparator uses pktSimpleId
     private final PriorityQueue<PayloadPacket>[] pending;
     private final Writer writer;
+    private Consumer<Packet> upperLayerDeliver;
 
     public LCBBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts,
-                        ArrayList[] hostDep) {
+                        ArrayList[] hostDep, Consumer<Packet> upperLayerDeliver) {
+        this.upperLayerDeliver = upperLayerDeliver;
         this.writer = writer;
         next = new int[hosts.size()];
         this.hostDep = hostDep;
@@ -36,7 +39,7 @@ public class LCBBroadcast extends Layer {
     @Override
     public void deliver(Packet pkt) {
         delivered.offer(pkt);
-//        upperLayerDeliver.accept(pkt);
+        upperLayerDeliver.accept(pkt);
     }
 
     @Override

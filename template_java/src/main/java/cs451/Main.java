@@ -2,6 +2,7 @@ package cs451;
 
 //import cs451.Layer.FIFOBroadcast;
 import cs451.Layer.LCBBroadcast;
+import cs451.Layer.LogLayer;
 import cs451.Parser.Parser;
 
 import java.time.ZonedDateTime;
@@ -45,7 +46,7 @@ public class Main {
         int myId = parser.myId();
         Host myHost = null;
         for (Host host : parser.hosts()) if (host.getId() == myId) myHost = host;
-        new LCBBroadcast(parser.nbMessageToSend(), writer, myHost, parser.hosts(),
+        new LogLayer(parser.nbMessageToSend(), writer, myHost, parser.hosts(),
                 parser.getHostDependencies()).run();
     }
 

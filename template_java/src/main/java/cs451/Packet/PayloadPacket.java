@@ -10,13 +10,13 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
     private int payload; // The payload is not used
     private int originalSenderId;
     private long simpleId;
-    private int[] clock;
 
     private static final long idBase1 = (long) Math.pow(10, 12);
     private static final long idBase2 = 100000000;
     private static final long idBase3 = 10000;
 
     public static final int BYTE_SIZE = 17 + 4 * NB_HOSTS;
+    private int[] clock = new int[NB_HOSTS];
 
     @Override
     public int getByteSize() {
