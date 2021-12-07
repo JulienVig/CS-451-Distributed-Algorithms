@@ -36,6 +36,7 @@ public class ConfigParser {
         String line;
         String[] dep;
         ArrayList<Integer> curr;
+        int counter = 0;
         while ((line = br.readLine()) != null) {
             dep = line.split(" ");
             curr = new ArrayList<>();
@@ -43,7 +44,9 @@ public class ConfigParser {
                 curr.add(Integer.valueOf(dep[i]));
             }
             hostDep[Integer.valueOf(dep[0]) - 1] = (ArrayList) curr.clone();
+            counter++;
         }
+        if(counter != hostDep.length) System.err.println("LCB config missing dependencies for some hosts.");
 
     }
 

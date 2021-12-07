@@ -31,7 +31,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-//        System.out.println("start " + ZonedDateTime.now().toInstant().toEpochMilli());
+        System.out.println("start " + ZonedDateTime.now().toInstant().toEpochMilli());
         Parser parser = new Parser(args);
         parser.parse();
         NB_HOSTS = parser.hosts().size();
