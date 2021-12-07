@@ -58,7 +58,7 @@ public class LCBBroadcast extends Layer {
 
     private boolean canBeDelivered(PayloadPacket pkt, int hostIdx){
         if(pkt.getSeqNb() != next[hostIdx]) return false;
-        for (int dep : hostDep[hostIdx]) if (pkt.getClock()[dep] > next[dep]) return false;
+        for (int dep : hostDep[hostIdx]) if (pkt.getClock()[dep - 1] > next[dep - 1]) return false;
         return true;
     }
 
