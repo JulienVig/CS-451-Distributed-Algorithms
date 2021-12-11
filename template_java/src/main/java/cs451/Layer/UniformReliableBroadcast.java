@@ -1,16 +1,14 @@
 package cs451.Layer;
 
 import cs451.Host;
-import cs451.Operation;
 import cs451.Packet.Packet;
 import cs451.Packet.PayloadPacket;
-import cs451.Writer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class UniformReliableBroadcast extends Layer{
     // At this layer pkt are identified by the long composed of originalSender and seqNumber
@@ -21,12 +19,12 @@ public class UniformReliableBroadcast extends Layer{
     private BestEffortBroadcast beb;
     private double quorum;
 
-    public UniformReliableBroadcast(int nbMessageToSend, Writer writer, Host myHost, List<Host> hosts,
-                                    Consumer<Packet> upperLayerDeliver, Supplier<int[]> getClock){
+    public UniformReliableBroadcast(ArrayList<PayloadPacket> pktToBroadcast, Host myHost, List<Host> hosts,
+                                    Consumer<Packet> upperLayerDeliver){
         quorum = hosts.size() / 2.0;
         this.upperLayerDeliver = upperLayerDeliver;
-        beb = new BestEffortBroadcast(nbMessageToSend, writer, myHost, hosts, this::deliver,
-                                        this::broadcast, getClock);
+        for (PayloadPacket pkt : pktToBroadcast) setPending(pkt);
+        beb = new BestEffortBroadcast(pktToBroadcast, myHost, hosts, this::deliver, this::setPending);
         new Thread(beb).start();
     }
 
@@ -48,9 +46,15 @@ public class UniformReliableBroadcast extends Layer{
         }
     }
 
+    public void broadcast(PayloadPacket pkt){
+        setPending(pkt);
+        beb.broadcast(pkt);
+    }
+
+
 
     // Method called when broadcasting the hosts' initial packets
-    private void broadcast(PayloadPacket pkt){
+    private void setPending(PayloadPacket pkt){
         long simpleId = pkt.getSimpleId();
         pending.add(simpleId);
 //        ack.put(simpleId, new HashSet<>());
@@ -71,7 +75,7 @@ public class UniformReliableBroadcast extends Layer{
 
         if(!pending.contains(simpleId)){
             pending.add(simpleId);
-            beb.broadcast(payloadPkt);
+            beb.reBroadcast(payloadPkt);
         }
         tryDelivering(payloadPkt);
     }

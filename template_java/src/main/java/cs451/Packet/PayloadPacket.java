@@ -23,6 +23,7 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
         return BYTE_SIZE;
     }
 
+
     public PayloadPacket(int seqNb, int originalSenderId, int senderId, int receiverId) {
         setPktId(createPktId(seqNb, originalSenderId, senderId, receiverId));
         this.seqNb = seqNb;
@@ -31,9 +32,19 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
         this.originalSenderId = originalSenderId;
         this.payload = seqNb;
     }
+
+    //Only used to deserialize packets, the clock is set in the deserialization
     public PayloadPacket(int seqNb, int originalSenderId, int senderId, int receiverId, byte[] bytes) {
         this(seqNb, originalSenderId, senderId, receiverId);
         setByteArray(bytes);
+    }
+
+    public PayloadPacket(int seqNb, int originalSenderId, int senderId, int receiverId, int[] clock){
+        this(seqNb, originalSenderId, senderId, receiverId);
+        this.clock = clock;
+    }
+    public PayloadPacket(int seqNb, int senderId, int receiverId, int[] clock){
+        this(seqNb, senderId, senderId, receiverId, clock);
     }
 
     private long createPktId(int seqNb, int originalSenderId, int senderId, int receiverId){
@@ -49,10 +60,6 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
         return clock;
     }
 
-    public PayloadPacket(int seqNb, int senderId, int receiverId, int[] clock){
-        this(seqNb, senderId, senderId, receiverId);
-        this.clock = clock;
-    }
 
     public int getSeqNb() {
         return seqNb;
@@ -83,7 +90,6 @@ public class PayloadPacket extends Packet{ //} implements Comparable<PayloadPack
         bb.putInt(getSenderId());
         bb.putInt(getReceiverId());
         for (int lsn : clock) bb.putInt(lsn);
-
     }
 
     public PayloadPacket(ByteBuffer bb, byte[] bytes){

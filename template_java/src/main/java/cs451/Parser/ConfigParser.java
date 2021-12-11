@@ -47,7 +47,6 @@ public class ConfigParser {
             counter++;
         }
         if(counter != hostDep.length) System.err.println("LCB config missing dependencies for some hosts.");
-
     }
 
     private void parseFIFOConfig(String configText){
