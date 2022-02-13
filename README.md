@@ -1,5 +1,6 @@
 # Distributed Algorithms 2021/22 - EPFL
 
+This repository shows an implementation of a Localized Causal Broadcast implemented in a distributed manner using Java. All individual processes broadcast arbitrary messages but they each maintain a list of processes upon whom they dependent. These lists dictate how processes can deliver messages: they must respect the causal order of messages broadcasted by processes listed in their dependencies. The next sections are the instructions of the project, describing successive abstractions until the LCB.
 
 # Overview
 The goal of this practical project is to implement certain building blocks necessary for a decentralized system. To this end, some underlying abstractions will be used:
