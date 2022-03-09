@@ -3,7 +3,7 @@
 | |Overview | 
 | - | - |
 |Course| CS-451 Distributed Algorithms|
-| Year | 2021-2022 |
+| Year | Autumn 2021 |
 | Final Grade | **5.75** / 6 |
 | Language| Java 11  |
 | Team size | 1 |
