@@ -1,4 +1,12 @@
-# Distributed Algorithms 2021/22 - EPFL
+# Distributed Algorithms
+
+| |Overview | 
+| - | - |
+|Course| CS-451 Distributed Algorithms|
+| Year | 2021-2022 |
+| Final Grade | **5.75** / 6 |
+| Language| Java 11  |
+| Team size | 1 |
 
 This project has been realized in the context of the EPFL Distributed Algorithms class in which I achieved a final grade of **5.75** on a 1 to 6 scale. It shows an implementation of a Localized Causal Broadcast implemented in a distributed manner using Java. All individual processes broadcast arbitrary messages but they each maintain a list of processes upon whom they dependent. These lists dictate how processes can deliver messages: they must respect the causal order of messages broadcasted by processes listed in their dependencies. The next sections are the instructions of the project, describing successive abstractions until the LCB. The main code can be found in [this folder](./java/src/main/java/cs451).
 
